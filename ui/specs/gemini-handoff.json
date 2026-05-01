@@ -1,0 +1,20 @@
+{
+  "purpose": "Narya UI implementation handoff for Gemini",
+  "rules": [
+    "Original ui/*.png files remain the visual truth source.",
+    "Use ui/specs/*.spec.md for dimensions, palette, boundary hints, and implementation notes.",
+    "Use ui/specs/spec-index.json for machine-readable source/spec mapping.",
+    "Use Element Plus for business pages only after applying Narya design tokens and theme overrides.",
+    "Do not rewrite Dashboard, Splash, or AppShell core visuals with default Element Plus components.",
+    "Screenshot at the same canvas size after implementation and compare against the PNG."
+  ],
+  "startHere": [
+    "ui/specs/README.md",
+    "ui/specs/_global-design-system.spec.md",
+    "ui/specs/_page-component-matrix.spec.md",
+    "ui/specs/spec-index.json"
+  ],
+  "recommendedFirstImplementation": "settings page as Element Plus themed sample",
+  "customHighFidelityPages": ["ui/splash.png", "ui/dashboard.png"],
+  "businessElementPlusFamilies": ["nodes", "config/profiles", "subscriptions", "connections", "rules", "logs", "tools", "settings"]
+}

@@ -17,14 +17,16 @@
 - [ ] 实现自研 Switch、Button 控件 (移至 Phase 2)
 
 ## Phase 2：Splash 与 Dashboard 重建 (GPUI)
-状态：进行中 🏗️
+状态：已完成 ✅
 
-- [ ] 在 GPUI 中还原 Splash 页面（像素级坐标对照 PNG/specs）
-- [ ] 实现 Splash 动画逻辑与窗口切换
-- [ ] 在 GPUI 中还原 Dashboard 页面（Sidebar, TopBar, 控制面板）
+- [x] 在 GPUI 中还原 Splash 页面（像素级坐标对照 PNG/specs）
+- [x] 实现 Splash 动画逻辑与窗口切换
+- [x] 在 GPUI 中还原 Dashboard 页面（Sidebar, TopBar, 控制面板）
 
 ## Phase 3：高级与业务页面迁移
-状态：待开始
+状态：进行中 🏗️
 
-- [ ] 节点、配置、连接、规则等页面的 GPUI 实现
-- [ ] 连接 Rust 核心提供数据驱动
+- [ ] 实现 Nodes 节点列表页面（支持表格/网格切换，延迟排序）
+- [ ] 实现 Subscriptions 订阅管理（添加、更新、流量统计）
+- [ ] 实现基础业务组件库 (Dropdown, Input, Table skeleton)
+- [ ] 建立视图路由机制，在 Dashboard 侧边栏点击后切换主区域视图

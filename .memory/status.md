@@ -6,31 +6,8 @@
 
 ## 当前阶段
 
-Phase 2: Splash 与 Dashboard 重建 (GPUI)。
-项目已成功建立基础 Design System 和 AppShell 布局，现在需要开始还原具体的业务页面，首要是 Splash 启动页和 Dashboard 核心面板。
-
-## 当前仓库内容
-
-```text
-Cargo.toml         # 主应用配置
-src/
-  main.rs          # GPUI 主应用入口
-crates/
-  narya-core/      # 核心类型 (待完善)
-  narya-daemon/    # Daemon (待完善)
-  narya-config/
-  narya-kernel/
-  narya-platform/
-  narya-subscription/
-  narya-rules/
-  narya-traffic/
-  narya-log/
-resources/
-architecture/narya-gpui-architecture-design.md  # 最新的 GPUI 架构文档
-ui/                # UI 视觉真源与 specs
-.memory/
-.prompt/
-```
+Phase 3: 高级与业务页面迁移 (GPUI)。
+项目已成功还原 Splash 启动页（含动画与跳转逻辑）和 Dashboard 核心面板（Sidebar, TopBar, Proxy Mode Cards, Nodes List）。现在需要开始迁移更复杂的业务页面，如节点列表、订阅管理、规则配置等。
 
 ## 已完成
 
@@ -38,16 +15,18 @@ ui/                # UI 视觉真源与 specs
 - **文档更新**：重写了 `prompt.md` 和 `architecture/narya-gpui-architecture-design.md`。
 - **GPUI Bootstrap**：成功在项目根目录初始化 GPUI 环境并实现基础窗口。
 - **Design System Phase 1**：建立了基于 `Theme` 模块的 Design Tokens，实现了 `GlassCard` 基础组件，并搭建了 canonical 1536x1024 的 `AppShell` 布局结构。
+- **Phase 2: Splash & Dashboard**：成功在 GPUI 中 1:1 还原了 Splash 启动页动画及 Dashboard 核心布局与组件（Switch, Proxy Cards, Node Items）。实现了 Splash 到 Dashboard 的平滑窗口切换。
 
 ## 尚未完成
 
-- 实现 GPUI 的基础 Design System (Tokens, AppShell)。
-- 逐步在 GPUI 中重建 Splash 和 Dashboard 等页面。
+- 迁移业务页面：节点 (Nodes)、订阅 (Subscriptions)、规则 (Rules)、日志 (Logs)、工具箱 (Tools)、设置 (Settings)。
+- 建立更完整的 UI 组件库 (Select, Dropdown, Table, Input 等)。
+- 对接 Rust 核心领域模型提供真实数据驱动。
 
 ## 阻塞/风险
 
-- GPUI 生态处于早期，需要高度手工实现基础组件（Button, Switch, Card 等）。所有组件需对照 `ui/specs` 精确开发。
+- 高级交互组件（如 Dropdown, Popover, Table）在 GPUI 中仍需高度自研，需确保护持 Narya 视觉风格。
 
 ## 下一个建议任务
 
-执行 `.prompt/003-phase-2-splash-dashboard.md`：重建 Splash 和 Dashboard 页面。
+执行 `.prompt/004-phase-3-business-pages.md`：开始实现 Nodes 节点列表与 Subscriptions 订阅管理页面。

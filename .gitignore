@@ -1,0 +1,19 @@
+# Local agent/session metadata
+.omx/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Node/Rust build outputs (future)
+node_modules/
+dist/
+build/
+target/
+
+# Environment files
+.env
+.env.*
+!.env.example
