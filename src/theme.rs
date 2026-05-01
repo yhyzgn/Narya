@@ -1,5 +1,6 @@
 use gpui::{rgb, Rgba};
 
+#[allow(dead_code)]
 pub struct Theme {
     pub bg: Rgba,
     pub surface: Rgba,
@@ -14,8 +15,18 @@ impl Default for Theme {
     fn default() -> Self {
         Self {
             bg: rgb(0xf9fafc),
-            surface: Rgba { r: 1.0, g: 1.0, b: 1.0, a: 0.8 },
-            border: Rgba { r: 0.88, g: 0.90, b: 0.92, a: 0.5 },
+            surface: Rgba {
+                r: 1.0,
+                g: 1.0,
+                b: 1.0,
+                a: 0.8,
+            },
+            border: Rgba {
+                r: 0.88,
+                g: 0.90,
+                b: 0.92,
+                a: 0.5,
+            },
             primary: rgb(0x4f46e5),
             success: rgb(0x10b981),
             text_primary: rgb(0x1e293b),
