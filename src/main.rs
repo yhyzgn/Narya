@@ -1,7 +1,7 @@
 use gpui::{prelude::*, *};
 
 mod theme;
-use theme::Theme;
+mod components;
 
 struct HelloWorld {
     text: SharedString,
