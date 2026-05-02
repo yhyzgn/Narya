@@ -5,6 +5,16 @@ use tokio::net::UnixListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use anyhow::Result;
 use std::fs;
+use narya_ipc::{IpcRequest, IpcResponse};
+use crate::kernel::KernelManager;
+use crate::proxy::{SystemProxy, LinuxGSettings};
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+struct DaemonState {
+    kernel: KernelManager,
+    proxy: LinuxGSettings,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -18,30 +28,52 @@ async fn main() -> Result<()> {
     let listener = UnixListener::bind(socket_path)?;
     println!("Daemon listening on {}", socket_path);
 
+    let state = Arc::new(Mutex::new(DaemonState {
+        kernel: KernelManager::new(),
+        proxy: LinuxGSettings,
+    }));
+
     loop {
         let (mut socket, _) = listener.accept().await?;
-        println!("New connection accepted");
+        let state = Arc::clone(&state);
         
         tokio::spawn(async move {
-            let mut buf = [0u8; 1024];
+            let mut buf = [0u8; 4096];
             loop {
                 match socket.read(&mut buf).await {
-                    Ok(0) => {
-                        println!("Connection closed");
-                        break;
-                    },
+                    Ok(0) => break,
                     Ok(n) => {
-                        println!("Received {} bytes", n);
-                        // Echo back for testing
-                        if let Err(e) = socket.write_all(&buf[..n]).await {
-                            eprintln!("Failed to write to socket: {}", e);
-                            break;
+                        if let Ok(request) = serde_json::from_slice::<IpcRequest>(&buf[..n]) {
+                            let mut state = state.lock().await;
+                            let response = match request.method.as_str() {
+                                "SetSystemProxy" => {
+                                    let enabled = request.params.as_bool().unwrap_or(false);
+                                    match state.proxy.set_enabled(enabled).await {
+                                        Ok(_) => IpcResponse { id: request.id, result: Some(serde_json::json!(true)), error: None },
+                                        Err(e) => IpcResponse { id: request.id, result: None, error: Some(e.to_string()) },
+                                    }
+                                },
+                                "StartKernel" => {
+                                    // Placeholder for binary and config paths
+                                    match state.kernel.start("sing-box", "/tmp/config.json").await {
+                                        Ok(_) => IpcResponse { id: request.id, result: Some(serde_json::json!(true)), error: None },
+                                        Err(e) => IpcResponse { id: request.id, result: None, error: Some(e.to_string()) },
+                                    }
+                                },
+                                "StopKernel" => {
+                                    match state.kernel.stop().await {
+                                        Ok(_) => IpcResponse { id: request.id, result: Some(serde_json::json!(true)), error: None },
+                                        Err(e) => IpcResponse { id: request.id, result: None, error: Some(e.to_string()) },
+                                    }
+                                },
+                                _ => IpcResponse { id: request.id, result: None, error: Some("Unknown method".to_string()) },
+                            };
+                            
+                            let res_json = serde_json::to_vec(&response).unwrap();
+                            let _ = socket.write_all(&res_json).await;
                         }
                     },
-                    Err(e) => {
-                        eprintln!("Failed to read from socket: {}", e);
-                        break;
-                    }
+                    Err(_) => break,
                 }
             }
         });
