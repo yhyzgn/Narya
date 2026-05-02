@@ -124,13 +124,14 @@ pub fn render_subscriptions_view(
                 .mt_4()
                 .flex()
                 .w_full()
-                .gap_6()
+                .gap_4()
                 .flex_1()
                 .overflow_hidden()
                 .child(
                     // Column 1: Subscription Source List
                     div()
                         .w(px(380.0))
+                        .h_full() // FIX: Fixed height matching parent layout
                         .flex_shrink_0()
                         .flex_col()
                         .bg(color_card)
@@ -162,9 +163,11 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
-                                .mt_2()
+                                .flex_1()
                                 .flex_col()
-                                .gap_3()
+                                .gap_2() // FIX: gap_2 as requested
+                                .mt_2()
+                                .overflow_hidden() // Standard GPUI 0.2 containment
                                 .children(state.subscriptions.iter()
                                     .filter(|s| s.name.to_lowercase().contains(&state.subscription_filter_text.to_lowercase()))
                                     .map(|sub| {
