@@ -1,0 +1,22 @@
+[
+  {
+    "name": "订阅0",
+    "url": "https://raw.githubusercontent.com/4n0nymou3/multi-proxy-config-fetcher/refs/heads/main/configs/proxy_configs.txt"
+  },
+  {
+    "name": "订阅1",
+    "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml"
+  },
+  {
+    "name": "订阅2",
+    "url": "https://raw.githubusercontent.com/Misaka-blog/chromego_merge/refs/heads/main/sub/merged_proxies_new.yaml"
+  },
+  {
+    "name": "订阅3",
+    "url": "https://sub.cmliussss.workers.dev/auto"
+  },
+  {
+    "name": "订阅4",
+    "url": "https://raw.githubusercontent.com/mahsanet/MahsaFreeConfig/refs/heads/main/mci/sub_1.txt"
+  }
+]

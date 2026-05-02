@@ -142,6 +142,7 @@ pub fn render_subscriptions_view(
                         .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅源列表")) // User refined title
                         .child(
                             div()
+                                .mt_2()
                                 .flex()
                                 .items_center()
                                 .h(px(40.0))
@@ -161,6 +162,7 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
+                                .mt_2()
                                 .flex_col()
                                 .gap_3()
                                 .p_1()
