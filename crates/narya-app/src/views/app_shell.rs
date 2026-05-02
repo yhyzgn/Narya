@@ -13,6 +13,8 @@ pub struct AppShell {
 impl AppShell {
     pub fn open(cx: &mut App) {
         let state = cx.new(|_| AppState::mock_data());
+        AppState::start_traffic_monitor(state.clone(), cx);
+
         // JSON size: 1366 x 840
         let bounds = Bounds::centered(None, size(px(1366.0), px(840.0)), cx);
         cx.open_window(
@@ -37,12 +39,17 @@ impl Render for AppShell {
         let view = self.active_view;
         let state_ref = self.state.read(cx);
 
-        let active_node_name = state_ref
+        let active_node = state_ref
             .active_node_id
             .as_ref()
-            .and_then(|id| state_ref.nodes.iter().find(|n| n.id == *id))
+            .and_then(|id| state_ref.nodes.iter().find(|n| n.id == *id));
+
+        let active_node_name = active_node
             .map(|n| n.name.clone())
             .unwrap_or_else(|| "Not Connected".to_string());
+
+        let download_speed = active_node.map(|n| n.download_speed).unwrap_or(0.0);
+        let upload_speed = active_node.map(|n| n.upload_speed).unwrap_or(0.0);
 
         // --- SPEC CONSTANTS ---
         let sidebar_width = px(220.0);
@@ -221,8 +228,8 @@ impl Render for AppShell {
                                             .gap_2()
                                             .text_xs()
                                             .text_color(color_text_secondary)
-                                            .child("↓ 12.45MB/s")
-                                            .child("↑ 3.26MB/s"),
+                                            .child(div().child(format!("↓ {:.1} MB/s", download_speed)))
+                                            .child(div().child(format!("↑ {:.1} MB/s", upload_speed))),
                                     )
                                     .child(
                                         // Chart Placeholder
