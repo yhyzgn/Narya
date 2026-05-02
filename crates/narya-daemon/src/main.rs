@@ -1,3 +1,4 @@
+mod kernel;
 mod proxy;
 
 use tokio::net::UnixListener;
