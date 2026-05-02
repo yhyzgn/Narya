@@ -163,11 +163,13 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
-                                .flex_1()
+                                .flex()
                                 .flex_col()
-                                .gap_2() // FIX: gap_2 as requested
+                                .flex_1()
+                                .gap_2() // Explicit gap_2 for vertical spacing
                                 .mt_2()
-                                .overflow_hidden() // Standard GPUI 0.2 containment
+                                .px_1() // Small padding for selection rings
+                                .overflow_hidden()
                                 .children(state.subscriptions.iter()
                                     .filter(|s| s.name.to_lowercase().contains(&state.subscription_filter_text.to_lowercase()))
                                     .map(|sub| {
