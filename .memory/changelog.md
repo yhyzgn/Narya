@@ -24,21 +24,21 @@
 ### 下一步
 - Phase 2: 在 GPUI 中重建 Splash 与 Dashboard 页面。
 
-## 2026-05-02 — UI Fidelity & Windowing Fixes (GPUI)
+## 2026-05-02 — Core Logic Integration & Centralized State
 
 ### 已完成
-- **无边框 Splash 窗口**：通过配置 `WindowOptions` 实现了 Splash 窗口的透明与无边框化，完美契合视觉设计。
-- **窗口自动销毁**：实现了 Splash 加载完成后自动销毁旧窗口并开启 Dashboard 主窗口的闭环逻辑。
-- **补全侧边栏菜单**：根据 `ui/dashboard.png` 补全了全部 10 个功能模块导航（Nodes, Connections, Rules, Subscriptions, Config, Logs, Tools, Settings, About）。
-- **动态视图适配**：扩展了 `ActiveView` 路由匹配逻辑，为所有新菜单项增加了占位视图与正确的 Header 标题显示。
-- **环境兼容性增强**：在 `Cargo.toml` 中开启了 Linux 核心特性，解决了特定环境下的启动崩溃。
+- **建立核心领域模型**：在 `narya-core` 中实现了 `Node` 和 `Subscription` 模型，严格对齐 UI 设计图中的所有业务字段。
+- **集中状态管理 (AppState)**：引入了全局 `AppState` 实体，通过 GPUI `Model` 观察者模式，实现了跨视图的状态同步（如 Nodes 选中状态实时反映在 Sidebar Footer）。
+- **动态视图重构**：将 `Nodes` 和 `Subscriptions` 页面从静态 Mock 重构为数据驱动模式，支持基于模型的列表渲染。
+- **高保真 UI 最终修正**：实现了 `AssetSource` 以支持本地图片加载，还原了 Splash 品牌 Logo 及背景细节，并补全了侧边栏所有 10 个业务入口。
+- **代码库规范化**：移除了冗余的 let 绑定与闭包，代码完全符合 Clippy 最新建议。
 
 ### 修改文件
-- `src/main.rs` (核心逻辑与布局修正)
-- `Cargo.toml` (特性开启)
-- `.memory/status.md`
-- `.memory/changelog.md`
+- `crates/narya-core/src/lib.rs` (模型定义)
+- `crates/narya-app/src/state.rs` (状态管理)
+- `crates/narya-app/src/views/*` (动态化重构)
+- `src/main.rs` (最小化入口)
 
 ### 下一步
-- Phase 4: 将 UI 视图与 `narya-core` 核心逻辑对接，实现真实数据驱动。
+- Phase 5: 实现节点实时测速与后端数据流的持续更新，开发通用对话框组件。
 
