@@ -3,7 +3,7 @@ use crate::state::AppState;
 use crate::theme::Theme;
 use crate::views::app_shell::AppShell;
 use gpui::{prelude::*, *};
-use narya_core::Subscription;
+use narya_core::Subscription as NaryaSubscription;
 
 pub fn render_subscriptions_view(
     model: &Entity<AppState>,
@@ -18,7 +18,7 @@ pub fn render_subscriptions_view(
     )
 }
 
-pub fn subscription_card(sub: &Subscription) -> impl IntoElement {
+pub fn subscription_card(sub: &NaryaSubscription) -> impl IntoElement {
     let theme = Theme::default();
     let usage_ratio = (sub.traffic_used / sub.traffic_total) as f32;
     let title = sub.name.clone();

@@ -3314,6 +3314,7 @@ dependencies = [
  "gpui_platform",
  "narya-config",
  "narya-core",
+ "narya-ipc",
  "rand 0.8.6",
  "serde",
  "serde_json",
@@ -3333,10 +3334,20 @@ version = "0.1.0"
 [[package]]
 name = "narya-daemon"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "narya-ipc",
+ "serde_json",
+ "tokio",
+]
 
 [[package]]
 name = "narya-ipc"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "narya-kernel"

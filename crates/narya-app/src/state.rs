@@ -1,53 +1,51 @@
+use narya_core;
 use gpui::*;
-use narya_core::{Node, NodeDetails, Subscription};
 use std::time::Duration;
+use crate::ipc::IpcClient;
 
 pub struct AppState {
-    pub nodes: Vec<Node>,
-    pub subscriptions: Vec<Subscription>,
+    pub nodes: Vec<narya_core::Node>,
+    pub subscriptions: Vec<narya_core::Subscription>,
     pub active_node_id: Option<String>,
 }
 
 impl AppState {
     pub fn start_traffic_monitor(model: Entity<Self>, cx: &mut App) {
         cx.spawn(move |cx: &mut AsyncApp| {
-            let mut cx = cx.clone();
+            let mut cx_inner = cx.clone();
             async move {
+                // Try to connect to daemon
+                let mut _client = IpcClient::connect("/tmp/narya.sock").await.ok();
+                
                 loop {
-                    cx.background_executor().timer(Duration::from_secs(1)).await;
-                    let _ = model.update(&mut cx, |state, cx| {
+                    cx_inner.background_executor().timer(Duration::from_secs(1)).await;
+                    let _ = model.update(&mut cx_inner, |state, cx| {
                         if let Some(active_id) = &state.active_node_id {
-                            if let Some(node) = state.nodes.iter_mut().find(|n| n.id == *active_id)
-                            {
-                                // Random fluctuation +/- 1.0 MB/s
-                                node.download_speed = (node.download_speed
-                                    + (rand::random::<f32>() - 0.5) * 2.0)
-                                    .max(0.0);
-                                node.upload_speed = (node.upload_speed
-                                    + (rand::random::<f32>() - 0.5) * 1.0)
-                                    .max(0.0);
+                            if let Some(node) = state.nodes.iter_mut().find(|n| n.id == *active_id) {
+                                // For now, still simulate, but we could use _client here
+                                node.download_speed = (node.download_speed + (rand::random::<f32>() - 0.5) * 2.0).max(0.0);
+                                node.upload_speed = (node.upload_speed + (rand::random::<f32>() - 0.5) * 1.0).max(0.0);
                             }
                         }
                         cx.notify();
                     });
                 }
             }
-        })
-        .detach();
+        }).detach();
     }
 
     pub fn test_all_latency(model: Entity<Self>, cx: &mut App) {
         // Collect IDs first to avoid borrow checker issues with model.read(cx) and model.update(cx)
         let ids: Vec<String> = model.read(cx).nodes.iter().map(|n| n.id.clone()).collect();
         let weak_model = model.downgrade();
-
+        
         for id in ids {
             let weak_model = weak_model.clone();
-
+            
             // Clear current latency to show loading state
             model.update(cx, |state, cx| {
                 if let Some(node) = state.nodes.iter_mut().find(|n| n.id == id) {
-                    node.latency = None;
+                    node.latency = None; 
                 }
                 cx.notify();
             });
@@ -58,11 +56,9 @@ impl AppState {
                 async move {
                     // Simulate network delay
                     let delay = 500 + rand::random::<u64>() % 2000;
-                    cx.background_executor()
-                        .timer(Duration::from_millis(delay))
-                        .await;
+                    cx.background_executor().timer(Duration::from_millis(delay)).await;
                     let new_latency = Some(20 + rand::random::<u32>() % 200);
-
+                    
                     let _ = weak_model.update(&mut cx, |state, cx| {
                         if let Some(node) = state.nodes.iter_mut().find(|n| n.id == id) {
                             node.latency = new_latency;
@@ -70,14 +66,13 @@ impl AppState {
                         cx.notify();
                     });
                 }
-            })
-            .detach();
+            }).detach();
         }
     }
 
     pub fn mock_data() -> Self {
         let nodes = vec![
-            Node {
+            narya_core::Node {
                 id: "hk-01".to_string(),
                 name: "香港 HK 01".to_string(),
                 country_code: "HK".to_string(),
@@ -87,7 +82,7 @@ impl AppState {
                 usage_pct: 23,
                 download_speed: 12.45,
                 upload_speed: 3.26,
-                details: NodeDetails {
+                details: narya_core::NodeDetails {
                     address: "hkg01.narya.net:443".to_string(),
                     encryption: "2022-blake3-aes-128-gcm".to_string(),
                     udp: true,
@@ -97,7 +92,7 @@ impl AppState {
                     last_test: "刚刚".to_string(),
                 },
             },
-            Node {
+            narya_core::Node {
                 id: "sg-01".to_string(),
                 name: "新加坡 SG 01".to_string(),
                 country_code: "SG".to_string(),
@@ -107,7 +102,7 @@ impl AppState {
                 usage_pct: 20,
                 download_speed: 11.2,
                 upload_speed: 4.1,
-                details: NodeDetails {
+                details: narya_core::NodeDetails {
                     address: "sgp01.narya.net:443".to_string(),
                     encryption: "none".to_string(),
                     udp: true,
@@ -117,7 +112,7 @@ impl AppState {
                     last_test: "1 min ago".to_string(),
                 },
             },
-            Node {
+            narya_core::Node {
                 id: "jp-01".to_string(),
                 name: "日本 JP 01".to_string(),
                 country_code: "JP".to_string(),
@@ -127,7 +122,7 @@ impl AppState {
                 usage_pct: 18,
                 download_speed: 9.8,
                 upload_speed: 3.2,
-                details: NodeDetails {
+                details: narya_core::NodeDetails {
                     address: "tyo01.narya.net:443".to_string(),
                     encryption: "auto".to_string(),
                     udp: true,
@@ -137,7 +132,7 @@ impl AppState {
                     last_test: "5 mins ago".to_string(),
                 },
             },
-            Node {
+            narya_core::Node {
                 id: "us-01".to_string(),
                 name: "美国 US 01".to_string(),
                 country_code: "US".to_string(),
@@ -147,7 +142,7 @@ impl AppState {
                 usage_pct: 32,
                 download_speed: 8.7,
                 upload_speed: 2.9,
-                details: NodeDetails {
+                details: narya_core::NodeDetails {
                     address: "lax01.narya.net:443".to_string(),
                     encryption: "none".to_string(),
                     udp: true,
@@ -160,7 +155,7 @@ impl AppState {
         ];
 
         let subscriptions = vec![
-            Subscription {
+            narya_core::Subscription {
                 id: "sub-1".to_string(),
                 name: "机场 A".to_string(),
                 url: "https://example.com/sub1".to_string(),
@@ -173,7 +168,7 @@ impl AppState {
                 expiration: "2026-06-10".to_string(),
                 status: "当前使用".to_string(),
             },
-            Subscription {
+            narya_core::Subscription {
                 id: "sub-2".to_string(),
                 name: "Work Proxy".to_string(),
                 url: "https://example.com/work".to_string(),
@@ -186,7 +181,7 @@ impl AppState {
                 expiration: "2026-08-15".to_string(),
                 status: "运行中".to_string(),
             },
-            Subscription {
+            narya_core::Subscription {
                 id: "sub-3".to_string(),
                 name: "Global Backup".to_string(),
                 url: "https://example.com/backup".to_string(),

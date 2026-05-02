@@ -41,9 +41,17 @@
 - [x] 重构为 Workspace 模式，解耦 `narya-app` 与 `narya-core`
 
 ## Phase 5：高级业务功能与交互
+状态：已完成 ✅
+
+- [x] 实现 Nodes 页面的“一键测速”逻辑，并异步回显延迟数据
+- [x] 实现侧边栏 Footer 的实时流量网速显示 (Mock 实时更新)
+- [x] 开发 Nodes 页面右下角的固定“节点详情”展示面板，严格对齐 UI
+- [x] 实现节点选中后的全局状态同步
+
+## Phase 6：后端内核集成 (Kernel Integration)
 状态：进行中 🏗️
 
-- [ ] 实现 Nodes 页面的“一键测速”逻辑，并异步回显延迟数据
-- [ ] 实现侧边栏 Footer 的实时流量网速显示 (Mock Core 提供频率更新)
-- [ ] 实现 Subscriptions 页面的“更新订阅”交互与后端调用
-- [ ] 开发通用的 `Modal` 弹出层组件，用于节点详情展示
+- [ ] 在 `narya-daemon` 中建立基于 RPC (如 JSON-RPC 或 gRPC) 的通信骨架
+- [ ] 实现 `narya-app` 调用 Daemon 接口切换系统代理开关
+- [ ] 接入 `sing-box` API 获取真实的活动连接列表与流量统计
+- [ ] 实现基础配置文件的加载、校验与实时应用逻辑

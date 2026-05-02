@@ -24,21 +24,20 @@
 ### 下一步
 - Phase 2: 在 GPUI 中重建 Splash 与 Dashboard 页面。
 
-## 2026-05-02 — Core Logic Integration & Centralized State
+## 2026-05-02 — Advanced Features & Interactive Logic
 
 ### 已完成
-- **建立核心领域模型**：在 `narya-core` 中实现了 `Node` 和 `Subscription` 模型，严格对齐 UI 设计图中的所有业务字段。
-- **集中状态管理 (AppState)**：引入了全局 `AppState` 实体，通过 GPUI `Model` 观察者模式，实现了跨视图的状态同步（如 Nodes 选中状态实时反映在 Sidebar Footer）。
-- **动态视图重构**：将 `Nodes` 和 `Subscriptions` 页面从静态 Mock 重构为数据驱动模式，支持基于模型的列表渲染。
-- **高保真 UI 最终修正**：实现了 `AssetSource` 以支持本地图片加载，还原了 Splash 品牌 Logo 及背景细节，并补全了侧边栏所有 10 个业务入口。
-- **代码库规范化**：移除了冗余的 let 绑定与闭包，代码完全符合 Clippy 最新建议。
+- **实时测速模拟**：实现了异步 Latency Test 逻辑，使用 `cx.spawn` 在后台线程模拟网络延迟并在前端实时回显结果。
+- **动态网速监控**：建立了全局流量监测定时任务（1s/次），侧边栏 Footer 可根据当前活动节点实时显示随机波动的网速信息。
+- **高保真详情面板**：在 Nodes 页面右下角实现了固定位置的“节点详情”面板，严格按照 `ui/nodes.png` 还原了地址、协议、加密、UDP/TLS 等业务字段。
+- **UI 组件打磨**：优化了 `Badge` 和 `node_card` 的视觉样式，根据选中状态动态切换边框与背景色，视觉对齐最新的规格要求。
+- **代码规范化**：解决了 Unit Value 绑定、未使用的 Theme 变量等 Clippy 警告，确保全工作区编译通过。
 
 ### 修改文件
-- `crates/narya-core/src/lib.rs` (模型定义)
-- `crates/narya-app/src/state.rs` (状态管理)
-- `crates/narya-app/src/views/*` (动态化重构)
-- `src/main.rs` (最小化入口)
+- `crates/narya-app/src/state.rs` (异步模拟逻辑)
+- `crates/narya-app/src/views/nodes.rs` (详情面板与布局重构)
+- `crates/narya-app/src/views/app_shell.rs` (侧边栏 Footer 实时更新)
 
 ### 下一步
-- Phase 5: 实现节点实时测速与后端数据流的持续更新，开发通用对话框组件。
+- Phase 6: 建立 `narya-daemon` 核心通信骨架，对接真实的系统代理控制与内核 API。
 

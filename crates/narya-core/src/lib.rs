@@ -1,3 +1,7 @@
+pub fn hello_core() -> &'static str {
+    "hello from core"
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Node {
     pub id: String,
