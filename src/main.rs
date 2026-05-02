@@ -106,7 +106,7 @@ impl Render for Splash {
             .relative()
             .child(
                 // Background
-                img("ui/splash-background-2k.png").size_full().absolute(),
+                img("resources/assets/bg_splash.png").size_full().absolute(),
             )
             .child(
                 div()
@@ -123,7 +123,7 @@ impl Render for Splash {
                             .flex()
                             .items_center()
                             .justify_center()
-                            .child(img("ui/icons/narya-logo-transparent-1080.png").size(px(140.0))),
+                            .child(img("resources/assets/logo.png").size(px(140.0))),
                     )
                     .child(
                         // Progress Bar Container
@@ -212,7 +212,7 @@ impl Render for AppShell {
             .relative()
             .child(
                 // Background
-                img("ui/splash-background-2k.png").size_full().absolute(),
+                img("resources/assets/bg_splash.png").size_full().absolute(),
             )
             .child(
                 div()
