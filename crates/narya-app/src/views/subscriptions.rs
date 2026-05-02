@@ -121,7 +121,7 @@ pub fn render_subscriptions_view(
         .child(
             // 2. Main Middle Section - Added mt_2 for extra separation
             div()
-                .mt_2()
+                .mt_4()
                 .flex()
                 .w_full()
                 .gap_6()
@@ -183,12 +183,14 @@ pub fn render_subscriptions_view(
                         .border_1()
                         .border_color(color_border)
                         .rounded_2xl()
-                        .p_6()
+                        .p_4()
                         .gap_6()
                         .overflow_hidden()
-                        .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅详情"))
+                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅详情"))
                         .child(
                             div()
+                                .mt_2()
+                                .pt_2()
                                 .flex()
                                 .gap_4()
                                 .border_b_1()
@@ -227,7 +229,7 @@ pub fn render_subscriptions_view(
                         .child(
                             div()
                                 .flex_col()
-                                .gap_5()
+                                .gap_8()
                                 .child(form_row("名称".to_string(), current_sub_name.clone(), false))
                                 .child(form_row("订阅 URL".to_string(), sub_url_display, true))
                                 .child(form_row("User-Agent".to_string(), "Narya/1.0.0 (Windows; sing-box)".to_string(), true))
@@ -302,7 +304,7 @@ pub fn render_subscriptions_view(
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_6()
+                                .p_4()
                                 .gap_5()
                                 .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("更新状态"))
                                 .child(
