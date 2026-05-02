@@ -19,19 +19,39 @@ pub enum IconName {
     Terminal,
 }
 
-pub fn icon(_name: IconName, size: f32, color: Hsla) -> impl IntoElement {
-    // High-fidelity placeholder: stylized rounded box
-    // In real GPUI app with assets: svg().path(_name.path())
+impl IconName {
+    pub fn path(&self) -> &'static str {
+        match self {
+            IconName::Dashboard => "resources/assets/ic_dashboard.svg",
+            IconName::Nodes => "resources/assets/ic_nodes.svg",
+            IconName::Config => "resources/assets/ic_config.svg",
+            IconName::Subscriptions => "resources/assets/ic_subscriptions.svg",
+            IconName::Connections => "resources/assets/ic_connections.svg",
+            IconName::Rules => "resources/assets/ic_rules.svg",
+            IconName::Logs => "resources/assets/ic_logs.svg",
+            IconName::Tools => "resources/assets/ic_tools.svg",
+            IconName::Settings => "resources/assets/ic_settings.svg",
+            IconName::About => "resources/assets/ic_about.svg",
+            IconName::Github => "resources/assets/ic_github.svg",
+            IconName::Moon => "resources/assets/ic_moon.svg",
+            IconName::Bell => "resources/assets/ic_bell.svg",
+            IconName::ExternalLink => "resources/assets/ic_external-link.svg",
+            IconName::Terminal => "resources/assets/ic_terminal.svg",
+        }
+    }
+}
+
+pub fn icon(name: IconName, size: f32, color: Hsla) -> impl IntoElement {
     div()
-        .size(px(size))
         .flex()
         .items_center()
         .justify_center()
+        .size(px(size))
         .child(
-            div()
-                .size(px(size * 0.7))
-                .bg(color)
-                .rounded_sm()
+            svg()
+                .path(name.path())
+                .size(px(size * 0.8))
+                .text_color(color) // Use text_color to set currentColor for SVG stroke/fill
         )
 }
 
