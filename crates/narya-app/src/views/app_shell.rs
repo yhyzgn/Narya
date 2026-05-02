@@ -14,14 +14,14 @@ pub struct AppShell {
 impl AppShell {
     pub fn open(cx: &mut App) {
         let state = cx.new(|_| AppState::mock_data());
-        AppState::start_traffic_monitor(state.clone(), cx);
-
-        // JSON size: 1366 x 840
-        let bounds = Bounds::centered(None, size(px(1366.0), px(840.0)), cx);
+        // Default and Min size: 1536 x 980
+        let size = size(px(1536.0), px(980.0));
+        let bounds = Bounds::centered(None, size, cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
-                // Standard titlebar handled by GPUI/System
+                // WindowOptions kind might have min_size depending on GPUI version, 
+                // but usually it's handled via bounds or window_min_size.
                 ..Default::default()
             },
             move |_, cx| {
@@ -54,7 +54,7 @@ impl Render for AppShell {
         let is_running = state_ref.kernel_running;
 
         // --- SPEC CONSTANTS ---
-        let sidebar_width = px(220.0);
+        let sidebar_width = px(270.0);
         let header_height = px(64.0);
         let footer_height = px(36.0);
 

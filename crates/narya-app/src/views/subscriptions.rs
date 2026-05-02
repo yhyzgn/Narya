@@ -10,7 +10,7 @@ pub fn render_subscriptions_view(
 ) -> impl IntoElement {
     let state = model.read(cx);
 
-    // --- Colors from PNG ---
+    // --- Definitive Colors from PNG ---
     let color_bg = rgb(0xF8FAFC);
     let color_card = rgb(0xFFFFFF);
     let color_border = rgb(0xE2E8F0);
@@ -43,10 +43,11 @@ pub fn render_subscriptions_view(
         .bg(color_bg)
         .gap_6()
         .child(
-            // 1. Top Metrics Row
+            // 1. Top Metrics Row - Standardized heights and min-widths
             div()
                 .flex()
                 .w_full()
+                .h(px(100.0)) // Fixed height for metrics
                 .gap_4()
                 .child(metric_card(
                     "当前订阅",
@@ -84,10 +85,10 @@ pub fn render_subscriptions_view(
                     div()
                         .flex_col()
                         .gap_3()
-                        .w(px(140.0))
+                        .w(px(160.0)) // Fixed width for actions
                         .child(
                             div()
-                                .h(px(42.0))
+                                .flex_1()
                                 .bg(color_brand)
                                 .text_color(white())
                                 .rounded_lg()
@@ -101,7 +102,7 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
-                                .h(px(42.0))
+                                .flex_1()
                                 .bg(color_card)
                                 .border_1()
                                 .border_color(color_border)
@@ -117,24 +118,25 @@ pub fn render_subscriptions_view(
                 ),
         )
         .child(
-            // 2. Main Middle Section
+            // 2. Main Middle Section - MIN-SIZE DRIVEN
             div()
                 .flex()
                 .w_full()
                 .gap_6()
                 .flex_1()
                 .child(
-                    // Column 1: List (Source List with isolation)
+                    // Column 1: List (Min-width 380px)
                     div()
                         .flex_col()
-                        .w(relative(0.3))
+                        .w(px(380.0))
+                        .flex_grow()
                         .gap_4()
                         .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅源列表"))
                         .child(
                             div()
                                 .flex()
                                 .items_center()
-                                .h(px(38.0))
+                                .h(px(40.0))
                                 .bg(color_card)
                                 .border_1()
                                 .border_color(color_border)
@@ -153,6 +155,7 @@ pub fn render_subscriptions_view(
                             div()
                                 .flex_col()
                                 .gap_3()
+                                .p_1()
                                 .children(state.subscriptions.iter()
                                     .filter(|s| s.name.to_lowercase().contains(&state.subscription_filter_text.to_lowercase()))
                                     .map(|sub| {
@@ -168,9 +171,10 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Column 2: Details Panel (Isolated)
+                    // Column 2: Details Panel (Min-width 560px, grows more)
                     div()
-                        .w(relative(0.4))
+                        .w(px(560.0))
+                        .flex_grow()
                         .flex_col()
                         .bg(color_card)
                         .border_1()
@@ -219,11 +223,12 @@ pub fn render_subscriptions_view(
                         .child(
                             div()
                                 .flex_col()
-                                .gap_4()
+                                .gap_5()
                                 .child(form_row("名称".to_string(), current_sub_name.clone(), false))
                                 .child(form_row("订阅 URL".to_string(), sub_url_display, true))
                                 .child(form_row("User-Agent".to_string(), "Narya/1.0.0 (Windows; sing-box)".to_string(), true))
                                 .child(form_row("更新间隔".to_string(), "30 分钟".to_string(), true))
+                                .child(form_row("目标内核".to_string(), "sing-box".to_string(), true))
                         )
                         .child(
                             div()
@@ -280,9 +285,10 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Column 3: Status Cards (Isolated)
+                    // Column 3: Status (Min-width 300px)
                     div()
-                        .w(relative(0.3))
+                        .w(px(300.0))
+                        .flex_grow()
                         .flex_col()
                         .gap_6()
                         .child(
@@ -340,15 +346,16 @@ pub fn render_subscriptions_view(
                 )
         )
         .child(
-            // 3. Bottom Sections
+            // 3. Bottom Sections - Standardized heights
             div()
                 .flex()
                 .w_full()
+                .h(px(240.0)) // Fixed height for bottom analytics
                 .gap_6()
                 .child(
                     // Traffic Analytics
                     div()
-                        .w(relative(0.55))
+                        .flex_grow()
                         .flex_col()
                         .bg(color_card)
                         .border_1()
@@ -373,7 +380,7 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
-                                .h(px(150.0))
+                                .flex_1()
                                 .w_full()
                                 .bg(rgb(0xFAFBFE))
                                 .rounded_xl()
@@ -386,7 +393,7 @@ pub fn render_subscriptions_view(
                 .child(
                     // Subscription Priority
                     div()
-                        .w(relative(0.45))
+                        .flex_grow()
                         .flex_col()
                         .gap_4()
                         .child(
@@ -433,13 +440,13 @@ fn metric_card(
         .gap_4()
         .child(
             div()
-                .size(px(48.0))
+                .size(px(52.0))
                 .bg(icon_bg)
                 .rounded_2xl()
                 .flex()
                 .items_center()
                 .justify_center()
-                .child(icon(icon_name, 26.0, color.into()))
+                .child(icon(icon_name, 28.0, color.into()))
         )
         .child(
             div()
@@ -450,7 +457,7 @@ fn metric_card(
                     div()
                         .flex()
                         .items_baseline()
-                        .gap_2()
+                        .gap_3()
                         .child(div().text_2xl().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(val))
                         .child(if let Some(t) = badge_text {
                             let mut bg: Hsla = rgb(0xDCFCE7).into();
@@ -487,13 +494,13 @@ fn subscription_card(
         .on_mouse_down(MouseButton::Left, on_click)
         .child(
             div()
-                .size(px(44.0))
+                .size(px(46.0))
                 .bg(icon_bg)
                 .rounded_xl()
                 .flex()
                 .items_center()
                 .justify_center()
-                .child(icon(IconName::Dashboard, 22.0, rgb(0x4F46E5).into()))
+                .child(icon(IconName::Dashboard, 24.0, rgb(0x4F46E5).into()))
         )
         .child(
             div()
@@ -514,7 +521,7 @@ fn subscription_card(
                                 .child(if active {
                                     let mut bg: Hsla = rgb(0xEEF2FF).into();
                                     bg.a = 1.0;
-                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
+                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
                                 } else {
                                     div().into_any_element()
                                 })
@@ -527,7 +534,7 @@ fn subscription_card(
                         .justify_between()
                         .items_center()
                         .mt_2()
-                        .child(div().text_color(rgb(0x64748B)).text_size(px(11.0)).child(format!("{} 节点   更新: {}", sub.node_count, sub.update_time)))
+                        .child(div().text_color(rgb(0x64748B)).text_size(px(12.0)).child(format!("{} 节点   更新: {}", sub.node_count, sub.update_time)))
                         .child(
                             div()
                                 .flex()
@@ -612,13 +619,13 @@ fn priority_item(index: &'static str, title: &'static str, sub: &'static str, ac
         .gap_3()
         .child(
             div()
-                .size(px(24.0))
+                .size(px(26.0))
                 .bg(border)
                 .rounded_full()
                 .flex()
                 .items_center()
                 .justify_center()
-                .child(div().text_color(white()).text_size(px(10.0)).font_weight(FontWeight::BOLD).child(index))
+                .child(div().text_color(white()).text_size(px(11.0)).font_weight(FontWeight::BOLD).child(index))
         )
         .child(
             div()
