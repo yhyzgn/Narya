@@ -228,8 +228,13 @@ impl Render for AppShell {
                                             .gap_2()
                                             .text_xs()
                                             .text_color(color_text_secondary)
-                                            .child(div().child(format!("↓ {:.1} MB/s", download_speed)))
-                                            .child(div().child(format!("↑ {:.1} MB/s", upload_speed))),
+                                            .child(
+                                                div()
+                                                    .child(format!("↓ {:.1} MB/s", download_speed)),
+                                            )
+                                            .child(
+                                                div().child(format!("↑ {:.1} MB/s", upload_speed)),
+                                            ),
                                     )
                                     .child(
                                         // Chart Placeholder

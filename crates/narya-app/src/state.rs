@@ -1,5 +1,5 @@
-use narya_core::{Node, NodeDetails, Subscription};
 use gpui::*;
+use narya_core::{Node, NodeDetails, Subscription};
 use std::time::Duration;
 
 pub struct AppState {
@@ -17,31 +17,37 @@ impl AppState {
                     cx.background_executor().timer(Duration::from_secs(1)).await;
                     let _ = model.update(&mut cx, |state, cx| {
                         if let Some(active_id) = &state.active_node_id {
-                            if let Some(node) = state.nodes.iter_mut().find(|n| n.id == *active_id) {
+                            if let Some(node) = state.nodes.iter_mut().find(|n| n.id == *active_id)
+                            {
                                 // Random fluctuation +/- 1.0 MB/s
-                                node.download_speed = (node.download_speed + (rand::random::<f32>() - 0.5) * 2.0).max(0.0);
-                                node.upload_speed = (node.upload_speed + (rand::random::<f32>() - 0.5) * 1.0).max(0.0);
+                                node.download_speed = (node.download_speed
+                                    + (rand::random::<f32>() - 0.5) * 2.0)
+                                    .max(0.0);
+                                node.upload_speed = (node.upload_speed
+                                    + (rand::random::<f32>() - 0.5) * 1.0)
+                                    .max(0.0);
                             }
                         }
                         cx.notify();
                     });
                 }
             }
-        }).detach();
+        })
+        .detach();
     }
 
     pub fn test_all_latency(model: Entity<Self>, cx: &mut App) {
         // Collect IDs first to avoid borrow checker issues with model.read(cx) and model.update(cx)
         let ids: Vec<String> = model.read(cx).nodes.iter().map(|n| n.id.clone()).collect();
         let weak_model = model.downgrade();
-        
+
         for id in ids {
             let weak_model = weak_model.clone();
-            
+
             // Clear current latency to show loading state
             model.update(cx, |state, cx| {
                 if let Some(node) = state.nodes.iter_mut().find(|n| n.id == id) {
-                    node.latency = None; 
+                    node.latency = None;
                 }
                 cx.notify();
             });
@@ -52,17 +58,20 @@ impl AppState {
                 async move {
                     // Simulate network delay
                     let delay = 500 + rand::random::<u64>() % 2000;
-                    cx.background_executor().timer(Duration::from_millis(delay)).await;
+                    cx.background_executor()
+                        .timer(Duration::from_millis(delay))
+                        .await;
                     let new_latency = Some(20 + rand::random::<u32>() % 200);
-                    
-                    weak_model.update(&mut cx, |state, cx| {
+
+                    let _ = weak_model.update(&mut cx, |state, cx| {
                         if let Some(node) = state.nodes.iter_mut().find(|n| n.id == id) {
                             node.latency = new_latency;
                         }
                         cx.notify();
-                    }).ok();
+                    });
                 }
-            }).detach();
+            })
+            .detach();
         }
     }
 
