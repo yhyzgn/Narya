@@ -1,3 +1,5 @@
+mod proxy;
+
 use tokio::net::UnixListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use anyhow::Result;
