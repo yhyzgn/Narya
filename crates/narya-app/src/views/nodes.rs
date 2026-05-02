@@ -42,12 +42,13 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 ),
         )
         .child(
-            // Node List
+            // Node List (Middle)
             div()
                 .flex_1()
                 .overflow_hidden()
                 .flex_col()
                 .gap_3()
+                .mb_6()
                 .children(state.nodes.iter().map(|n| {
                     let is_selected = state.active_node_id.as_deref() == Some(&n.id);
                     node_card(n, is_selected, {
@@ -62,6 +63,60 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                     })
                 })),
         )
+        .child(
+            // Bottom Area (Chart + Details)
+            div()
+                .flex()
+                .flex_row()
+                .gap_6()
+                .h(px(240.0))
+                .child(
+                    // Latency Trend Card
+                    glass_card()
+                        .flex_1()
+                        .child(
+                            div()
+                                .flex_col()
+                                .child(div().text_sm().font_weight(FontWeight::BOLD).child("延迟趋势"))
+                                .child(div().flex_1().flex().items_center().justify_center().text_xs().text_color(theme.text_muted).child("Chart Placeholder"))
+                        )
+                )
+                .child(
+                    // Node Details Card (Strictly follow design)
+                    render_node_details_card(state.active_node_id.as_deref(), &state.nodes)
+                )
+        )
+}
+
+fn render_node_details_card(active_id: Option<&str>, nodes: &[Node]) -> impl IntoElement {
+    let theme = Theme::default();
+    let node = active_id.and_then(|id| nodes.iter().find(|n| n.id == id));
+    
+    glass_card()
+        .w(px(320.0))
+        .child(
+            div()
+                .flex_col()
+                .gap_2()
+                .child(div().text_sm().font_weight(FontWeight::BOLD).child(format!("节点详情 ({})", node.map(|n| n.name.as_str()).unwrap_or("未选择"))))
+                .child(detail_row("地址", node.map(|n| n.details.address.as_str()).unwrap_or("-")))
+                .child(detail_row("协议", node.map(|n| n.protocol.as_str()).unwrap_or("-")))
+                .child(detail_row("加密", node.map(|n| n.details.encryption.as_str()).unwrap_or("-")))
+                .child(detail_row("UDP", if node.map(|n| n.details.udp).unwrap_or(false) { "已启用" } else { "否" }))
+                .child(detail_row("TLS", if node.map(|n| n.details.tls).unwrap_or(false) { "是" } else { "否" }))
+                .child(detail_row("传输", node.map(|n| n.details.transport.as_str()).unwrap_or("-")))
+                .child(detail_row("上次测试", node.map(|n| n.details.last_test.as_str()).unwrap_or("-")))
+        )
+}
+
+fn detail_row(label: &'static str, value: &str) -> impl IntoElement {
+    let theme = Theme::default();
+    div()
+        .flex()
+        .justify_between()
+        .text_xs()
+        .child(div().text_color(theme.text_secondary).child(label))
+        .child(div().text_color(theme.text_primary).font_weight(FontWeight::MEDIUM).child(value.to_string()))
 }
 
 pub fn node_card(
@@ -81,6 +136,7 @@ pub fn node_card(
         .p_4()
         .cursor_pointer()
         .on_mouse_down(MouseButton::Left, on_click)
+        .border_color(if selected { theme.primary } else { theme.border })
         .child(
             div()
                 .flex()
