@@ -13,7 +13,8 @@ pub struct AppShell {
 impl AppShell {
     pub fn open(cx: &mut App) {
         let state = cx.new(|_| AppState::mock_data());
-        let bounds = Bounds::centered(None, size(px(1536.0), px(1024.0)), cx);
+        // JSON size: 1366 x 840
+        let bounds = Bounds::centered(None, size(px(1366.0), px(840.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
@@ -24,7 +25,7 @@ impl AppShell {
                 }),
                 ..Default::default()
             },
-            move |_, cx| {
+            |_, cx| {
                 cx.new(|_| AppShell {
                     active_view: ActiveView::Dashboard,
                     state,
@@ -47,20 +48,28 @@ impl Render for AppShell {
             .map(|n| n.name.clone())
             .unwrap_or_else(|| "Not Connected".to_string());
 
-        // --- SPEC CONSTANTS ---
+        // --- SPEC CONSTANTS (from detailed JSON/MD) ---
         let sidebar_width = px(220.0);
         let titlebar_height = px(48.0);
         let header_height = px(64.0);
         let footer_height = px(36.0);
 
+        let color_bg = rgb(0xF5F7FB);
+        let color_surface = rgb(0xFFFFFF);
+        let color_border = rgb(0xE5E7EB);
+        let color_text_primary = rgb(0x111827);
+        let color_text_secondary = rgb(0x6B7280);
+        let color_brand = rgb(0x3B82F6);
+        let color_brand_soft = rgb(0xEEF2FF);
+
         div()
             .size_full()
             .flex()
             .flex_col()
-            .bg(rgb(0xF5F7FB)) // Background color from spec
-            .text_color(rgb(0x111827)) // Text primary
+            .bg(color_surface)
+            .text_color(color_text_primary)
             .child(
-                // 1. TitleBar (48px)
+                // --- 1. TitleBar (48px) ---
                 div()
                     .h(titlebar_height)
                     .w_full()
@@ -69,9 +78,9 @@ impl Render for AppShell {
                     .justify_between()
                     .px_4()
                     .border_b_1()
-                    .border_color(rgb(0xE5E7EB))
-                    .bg(rgb(0xFFFFFF))
+                    .border_color(color_border)
                     .child(
+                        // Left Title Section
                         div()
                             .flex()
                             .items_center()
@@ -83,9 +92,15 @@ impl Render for AppShell {
                                     .font_weight(FontWeight::MEDIUM)
                                     .child("Narya"),
                             )
-                            .child(div().text_xs().text_color(rgb(0x6B7280)).child("v1.0.0")),
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(color_text_secondary)
+                                    .child("v1.0.0"),
+                            ),
                     )
                     .child(
+                        // Right Window Controls
                         div()
                             .flex()
                             .gap_1()
@@ -95,130 +110,126 @@ impl Render for AppShell {
                     ),
             )
             .child(
-                // 2. Body (Flex Row)
+                // --- 2. Body (Flex Row) ---
                 div()
                     .flex_1()
                     .flex()
                     .flex_row()
                     .child(
-                        // 2.1 Sidebar (220px fixed)
+                        // --- 2.1 Sidebar (220px fixed) ---
                         div()
                             .w(sidebar_width)
                             .h_full()
                             .flex()
                             .flex_col()
                             .justify_between()
-                            .bg(rgb(0xFFFFFF))
                             .border_r_1()
-                            .border_color(rgb(0xE5E7EB))
+                            .border_color(color_border)
                             .child(
-                                // Sidebar Brand Header
                                 div()
-                                    .h(px(60.0))
-                                    .flex()
-                                    .items_center()
-                                    .px_5()
-                                    .gap_2()
-                                    .child(img("resources/assets/logo.png").size(px(32.0)))
+                                    .flex_col()
                                     .child(
+                                        // Sidebar Brand Area
+                                        div()
+                                            .h(px(60.0))
+                                            .flex()
+                                            .items_center()
+                                            .px_5()
+                                            .gap_2()
+                                            .child(img("resources/assets/logo.png").size(px(32.0)))
+                                            .child(
+                                                div()
+                                                    .flex_col()
+                                                    .child(
+                                                        div()
+                                                            .text_base()
+                                                            .font_weight(FontWeight::BOLD)
+                                                            .child("Narya"),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .text_xs()
+                                                            .text_color(color_text_secondary)
+                                                            .child("v1.0.0"),
+                                                    ),
+                                            ),
+                                    )
+                                    .child(
+                                        // Menu List
                                         div()
                                             .flex_col()
-                                            .child(
-                                                div()
-                                                    .text_base()
-                                                    .font_weight(FontWeight::BOLD)
-                                                    .child("Narya"),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .text_color(rgb(0x6B7280))
-                                                    .child("Secure Proxy"),
-                                            ),
+                                            .p_2()
+                                            .gap_1()
+                                            .child(nav_item(
+                                                "仪表盘",
+                                                view == ActiveView::Dashboard,
+                                                cx,
+                                                ActiveView::Dashboard,
+                                            ))
+                                            .child(nav_item(
+                                                "节点",
+                                                view == ActiveView::Nodes,
+                                                cx,
+                                                ActiveView::Nodes,
+                                            ))
+                                            .child(nav_item(
+                                                "配置",
+                                                view == ActiveView::Config,
+                                                cx,
+                                                ActiveView::Config,
+                                            ))
+                                            .child(nav_item(
+                                                "订阅",
+                                                view == ActiveView::Subscriptions,
+                                                cx,
+                                                ActiveView::Subscriptions,
+                                            ))
+                                            .child(nav_item(
+                                                "连接",
+                                                view == ActiveView::Connections,
+                                                cx,
+                                                ActiveView::Connections,
+                                            ))
+                                            .child(nav_item(
+                                                "规则",
+                                                view == ActiveView::Rules,
+                                                cx,
+                                                ActiveView::Rules,
+                                            ))
+                                            .child(nav_item(
+                                                "日志",
+                                                view == ActiveView::Logs,
+                                                cx,
+                                                ActiveView::Logs,
+                                            ))
+                                            .child(nav_item(
+                                                "工具箱",
+                                                view == ActiveView::Tools,
+                                                cx,
+                                                ActiveView::Tools,
+                                            ))
+                                            .child(nav_item(
+                                                "设置",
+                                                view == ActiveView::Settings,
+                                                cx,
+                                                ActiveView::Settings,
+                                            )),
                                     ),
                             )
                             .child(
-                                // Menu List
-                                div()
-                                    .flex_1()
-                                    .flex_col()
-                                    .px_2()
-                                    .py_2()
-                                    .gap_1()
-                                    .child(nav_item(
-                                        "Dashboard",
-                                        view == ActiveView::Dashboard,
-                                        cx,
-                                        ActiveView::Dashboard,
-                                    ))
-                                    .child(nav_item(
-                                        "Nodes",
-                                        view == ActiveView::Nodes,
-                                        cx,
-                                        ActiveView::Nodes,
-                                    ))
-                                    .child(nav_item(
-                                        "Connections",
-                                        view == ActiveView::Connections,
-                                        cx,
-                                        ActiveView::Connections,
-                                    ))
-                                    .child(nav_item(
-                                        "Rules",
-                                        view == ActiveView::Rules,
-                                        cx,
-                                        ActiveView::Rules,
-                                    ))
-                                    .child(nav_item(
-                                        "Subscriptions",
-                                        view == ActiveView::Subscriptions,
-                                        cx,
-                                        ActiveView::Subscriptions,
-                                    ))
-                                    .child(nav_item(
-                                        "Config",
-                                        view == ActiveView::Config,
-                                        cx,
-                                        ActiveView::Config,
-                                    ))
-                                    .child(nav_item(
-                                        "Logs",
-                                        view == ActiveView::Logs,
-                                        cx,
-                                        ActiveView::Logs,
-                                    ))
-                                    .child(nav_item(
-                                        "Tools",
-                                        view == ActiveView::Tools,
-                                        cx,
-                                        ActiveView::Tools,
-                                    ))
-                                    .child(nav_item(
-                                        "Settings",
-                                        view == ActiveView::Settings,
-                                        cx,
-                                        ActiveView::Settings,
-                                    ))
-                                    .child(nav_item(
-                                        "About",
-                                        view == ActiveView::About,
-                                        cx,
-                                        ActiveView::About,
-                                    )),
-                            )
-                            .child(
-                                // Sidebar Footer Area
+                                // Sidebar Bottom Area
                                 div()
                                     .flex_col()
+                                    .p_3()
+                                    .gap_2()
                                     .child(
                                         // Status Card
                                         div()
-                                            .m_3()
                                             .p_3()
                                             .rounded_lg()
                                             .bg(rgb(0xF9FAFB))
                                             .border_1()
-                                            .border_color(rgb(0xE5E7EB))
+                                            .border_color(color_border)
                                             .flex_col()
                                             .gap_2()
                                             .child(
@@ -247,19 +258,35 @@ impl Render for AppShell {
                                             )
                                             .child(
                                                 div()
-                                                    .flex()
-                                                    .justify_between()
                                                     .text_xs()
-                                                    .text_color(rgb(0x6B7280))
-                                                    .child(div().child("↓ 12.4 MB/s"))
-                                                    .child(div().child("↑ 4.6 MB/s")),
+                                                    .bg(color_brand_soft)
+                                                    .text_color(color_brand)
+                                                    .px_2()
+                                                    .py_0p5()
+                                                    .rounded_sm()
+                                                    .child("48ms"),
+                                            )
+                                            .child(
+                                                div()
+                                                    .flex()
+                                                    .gap_2()
+                                                    .text_xs()
+                                                    .text_color(color_text_secondary)
+                                                    .child("↓ 12.45MB/s")
+                                                    .child("↑ 3.26MB/s"),
+                                            )
+                                            .child(
+                                                // Chart Placeholder
+                                                div()
+                                                    .h(px(40.0))
+                                                    .w_full()
+                                                    .bg(color_border)
+                                                    .rounded_sm(),
                                             ),
                                     )
                                     .child(
-                                        // Bottom Actions
+                                        // Bottom Action Icons
                                         div()
-                                            .px_3()
-                                            .py_2()
                                             .flex()
                                             .gap_3()
                                             .child(action_icon("GH"))
@@ -269,13 +296,14 @@ impl Render for AppShell {
                             ),
                     )
                     .child(
-                        // 2.2 Main (Flex Column)
+                        // --- 2.2 Main Content Area ---
                         div()
                             .flex_1()
                             .flex()
                             .flex_col()
+                            .bg(color_bg)
                             .child(
-                                // Header (64px)
+                                // Main Header (64px)
                                 div()
                                     .h(header_height)
                                     .w_full()
@@ -283,9 +311,9 @@ impl Render for AppShell {
                                     .items_center()
                                     .justify_between()
                                     .px_5()
-                                    .bg(rgb(0xFFFFFF))
+                                    .bg(color_surface)
                                     .border_b_1()
-                                    .border_color(rgb(0xE5E7EB))
+                                    .border_color(color_border)
                                     .child(
                                         div()
                                             .flex_col()
@@ -296,20 +324,20 @@ impl Render for AppShell {
                                                     .child(match view {
                                                         ActiveView::Dashboard => "仪表盘",
                                                         ActiveView::Nodes => "节点列表",
-                                                        ActiveView::Connections => "活动连接",
-                                                        ActiveView::Rules => "分流规则",
-                                                        ActiveView::Subscriptions => "订阅管理",
                                                         ActiveView::Config => "配置编辑",
+                                                        ActiveView::Subscriptions => "订阅管理",
+                                                        ActiveView::Connections => "连接详情",
+                                                        ActiveView::Rules => "规则管理",
                                                         ActiveView::Logs => "实时日志",
                                                         ActiveView::Tools => "工具箱",
                                                         ActiveView::Settings => "系统设置",
-                                                        ActiveView::About => "关于 Narya",
+                                                        _ => "Narya",
                                                     }),
                                             )
                                             .child(
                                                 div()
                                                     .text_xs()
-                                                    .text_color(rgb(0x6B7280))
+                                                    .text_color(color_text_secondary)
                                                     .child("管理您的网络连接与订阅"),
                                             ),
                                     )
@@ -318,11 +346,15 @@ impl Render for AppShell {
                                             .flex()
                                             .gap_3()
                                             .child(header_button("添加", true))
-                                            .child(header_button("刷新全部", false)),
+                                            .child(header_button("刷新全部", false))
+                                            .child(header_button("导入", false))
+                                            .child(header_button("导出", false))
+                                            .child(action_icon("⚙"))
+                                            .child(action_icon("⋮")),
                                     ),
                             )
                             .child(
-                                // Content (Flex 1)
+                                // Scrollable Content
                                 div().flex_1().p_5().overflow_hidden().child(match view {
                                     ActiveView::Dashboard => {
                                         render_dashboard_view().into_any_element()
@@ -342,7 +374,7 @@ impl Render for AppShell {
                     ),
             )
             .child(
-                // 3. Footer (36px)
+                // --- 3. Footer (36px) ---
                 div()
                     .h(footer_height)
                     .w_full()
@@ -350,9 +382,9 @@ impl Render for AppShell {
                     .items_center()
                     .justify_between()
                     .px_4()
-                    .bg(rgb(0xFFFFFF))
+                    .bg(color_surface)
                     .border_t_1()
-                    .border_color(rgb(0xE5E7EB))
+                    .border_color(color_border)
                     .child(
                         div()
                             .flex()
@@ -368,15 +400,15 @@ impl Render for AppShell {
                             .child(
                                 div()
                                     .text_xs()
-                                    .text_color(rgb(0x3B82F6))
+                                    .text_color(color_brand)
                                     .cursor_pointer()
                                     .child("检查更新"),
                             )
                             .child(
                                 div()
                                     .text_xs()
-                                    .text_color(rgb(0x6B7280))
-                                    .child("Version: 1.0.0"),
+                                    .text_color(color_text_secondary)
+                                    .child("1.0.0"),
                             ),
                     ),
             )
@@ -415,8 +447,8 @@ fn nav_item(
             div()
                 .flex()
                 .items_center()
-                .gap_2()
-                .child(div().size(px(18.0)).bg(rgb(0x6B7280)).rounded_sm()) // Icon placeholder
+                .gap_3()
+                .child(div().size(px(18.0)).bg(rgb(0x94A3B8)).rounded_sm()) // Icon placeholder
                 .child(
                     div()
                         .text_sm()
