@@ -9,9 +9,15 @@ pub struct AppState {
     pub subscriptions: Vec<narya_core::Subscription>,
     pub active_node_id: Option<String>,
     pub kernel_running: bool,
+    pub filter_text: String,
 }
 
 impl AppState {
+    pub fn set_filter_text(&mut self, text: String, cx: &mut Context<Self>) {
+        self.filter_text = text;
+        cx.notify();
+    }
+
     pub fn handle_notification(&mut self, notif: IpcNotification, cx: &mut Context<Self>) {
         match notif {
             IpcNotification::TrafficUpdate { down, up } => {
@@ -261,6 +267,7 @@ impl AppState {
             nodes,
             subscriptions,
             kernel_running: false,
+            filter_text: String::new(),
         }
     }
 }

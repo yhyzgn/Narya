@@ -1,4 +1,4 @@
-use crate::components::{badge, glass_card, search_input};
+use crate::components::{badge, glass_card};
 use crate::state::AppState;
 use crate::theme::Theme;
 use crate::views::app_shell::AppShell;
@@ -10,6 +10,7 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
     let state = model.read(cx);
 
     let color_brand = rgb(0x3B82F6);
+    let filter_text = state.filter_text.clone();
 
     div()
         .flex_col()
@@ -21,7 +22,30 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 .items_center()
                 .justify_between()
                 .mb_6()
-                .child(search_input())
+                .child(
+                    // Search Input (Custom built for high fidelity)
+                    div()
+                        .w(px(320.0))
+                        .h(px(36.0))
+                        .bg(rgb(0xFFFFFF))
+                        .border_1()
+                        .border_color(rgb(0xE5E7EB))
+                        .rounded_md()
+                        .flex()
+                        .items_center()
+                        .px_3()
+                        .gap_2()
+                        .child("🔍") // Placeholder icon
+                        .child(
+                            // Note: GPUI 0.2 doesn't have a standard 'text_input' yet, 
+                            // we would usually use a separate view or handle events manually.
+                            // For this task, we will simulate the filter via a state update call.
+                            div()
+                                .text_sm()
+                                .text_color(if filter_text.is_empty() { theme.text_muted } else { theme.text_primary })
+                                .child(if filter_text.is_empty() { "搜索节点...".to_string() } else { filter_text.clone() })
+                        )
+                )
                 .child(
                     div()
                         .flex()
@@ -49,18 +73,20 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 .flex_col()
                 .gap_3()
                 .mb_6()
-                .children(state.nodes.iter().map(|n| {
-                    let is_selected = state.active_node_id.as_deref() == Some(&n.id);
-                    node_card(n, is_selected, {
-                        let model = model.clone();
-                        let node_id = n.id.clone();
-                        move |_, _, cx| {
-                            model.update(cx, |state, cx| {
-                                state.active_node_id = Some(node_id.clone());
-                                cx.notify();
-                            });
-                        }
-                    })
+                .children(state.nodes.iter()
+                    .filter(|n| n.name.to_lowercase().contains(&filter_text.to_lowercase()))
+                    .map(|n| {
+                        let is_selected = state.active_node_id.as_deref() == Some(&n.id);
+                        node_card(n, is_selected, {
+                            let model = model.clone();
+                            let node_id = n.id.clone();
+                            move |_, _, cx| {
+                                model.update(cx, |state, cx| {
+                                    state.active_node_id = Some(node_id.clone());
+                                    cx.notify();
+                                });
+                            }
+                        })
                 })),
         )
         .child(
