@@ -77,6 +77,7 @@ impl Render for AppShell {
                 // --- 1. Sidebar (220px fixed) ---
                 div()
                     .w(sidebar_width)
+                    .flex_shrink_0()
                     .h_full()
                     .flex()
                     .flex_col()
@@ -266,6 +267,7 @@ impl Render for AppShell {
                     .flex()
                     .flex_col()
                     .bg(color_bg)
+                    .overflow_hidden()
                     .child(
                         // Main Header (64px)
                         div()

@@ -43,7 +43,7 @@ pub fn render_subscriptions_view(
         .bg(color_bg)
         .gap_6()
         .child(
-            // 1. Top Metrics Row - FULLY DETERMINISTIC
+            // 1. Top Metrics Row
             div()
                 .flex()
                 .w_full()
@@ -125,12 +125,13 @@ pub fn render_subscriptions_view(
                 .w_full()
                 .gap_6()
                 .flex_1()
+                .overflow_hidden()
                 .child(
                     // Column 1: List
                     div()
                         .flex_col()
                         .w(px(380.0))
-                        .flex_grow()
+                        .flex_shrink_0() // CRITICAL: Don't shrink list
                         .gap_4()
                         .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅源列表"))
                         .child(
@@ -174,8 +175,8 @@ pub fn render_subscriptions_view(
                 .child(
                     // Column 2: Details Panel
                     div()
-                        .w(px(560.0))
-                        .flex_grow()
+                        .min_w(px(500.0)) // Minimum width
+                        .flex_1() // Use flex_1 to take remaining space instead of grow(2.0) for better control
                         .flex_col()
                         .bg(color_card)
                         .border_1()
@@ -183,11 +184,12 @@ pub fn render_subscriptions_view(
                         .rounded_2xl()
                         .p_6()
                         .gap_6()
+                        .overflow_hidden()
                         .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅详情"))
                         .child(
                             div()
                                 .flex()
-                                .gap_4() // Reduced gap for standardized tabs
+                                .gap_4()
                                 .border_b_1()
                                 .border_color(color_border)
                                 .child(tab_item("概览", state.active_subscription_tab == SubscriptionTab::Overview, {
@@ -289,7 +291,7 @@ pub fn render_subscriptions_view(
                     // Column 3: Status
                     div()
                         .w(px(300.0))
-                        .flex_grow()
+                        .flex_shrink_0() // Don't shrink status column
                         .flex_col()
                         .gap_6()
                         .child(
@@ -356,7 +358,7 @@ pub fn render_subscriptions_view(
                 .child(
                     // Traffic Analytics
                     div()
-                        .flex_grow()
+                        .flex_1()
                         .flex_col()
                         .bg(color_card)
                         .border_1()
@@ -394,7 +396,8 @@ pub fn render_subscriptions_view(
                 .child(
                     // Subscription Priority
                     div()
-                        .flex_grow()
+                        .w(px(500.0))
+                        .flex_shrink_0()
                         .flex_col()
                         .gap_4()
                         .child(
@@ -431,7 +434,7 @@ fn metric_card(
 
     div()
         .flex_1()
-        .min_w(px(260.0)) // FIX: Ensure cards don't collapse or expand based on content
+        .min_w(px(260.0))
         .bg(rgb(0xFFFFFF))
         .border_1()
         .border_color(rgb(0xE2E8F0))
@@ -454,6 +457,7 @@ fn metric_card(
             div()
                 .flex_col()
                 .gap_1()
+                .overflow_hidden()
                 .child(div().text_xs().font_weight(FontWeight::MEDIUM).text_color(rgb(0x64748B)).child(title))
                 .child(
                     div()
@@ -509,6 +513,7 @@ fn subscription_card(
                 .flex_1()
                 .flex_col()
                 .gap_1()
+                .overflow_hidden()
                 .child(
                     div()
                         .flex()
@@ -519,31 +524,32 @@ fn subscription_card(
                                 .flex()
                                 .items_baseline()
                                 .gap_2()
+                                .overflow_hidden()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(sub.name.clone()))
                                 .child(if active {
                                     let mut bg: Hsla = rgb(0xEEF2FF).into();
                                     bg.a = 1.0;
-                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
+                                    div().bg(bg).px_2().py_0p5().rounded_md().flex_shrink_0().child(div().text_color(rgb(0x4F46E5)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
                                 } else {
                                     div().into_any_element()
                                 })
                         )
                 )
-                .child(div().text_xs().text_color(rgb(0x94A3B8)).child("https://***********/sub"))
+                .child(div().text_xs().text_color(rgb(0x94A3B8)).overflow_hidden().child("https://***********/sub"))
                 .child(
                     div()
                         .flex()
                         .justify_between()
                         .items_center()
                         .mt_2()
-                        .child(div().text_color(rgb(0x64748B)).text_size(px(12.0)).child(format!("{} 节点   更新: {}", sub.node_count, sub.update_time)))
+                        .child(div().text_color(rgb(0x64748B)).text_size(px(11.0)).child(format!("{} 节点   更新: {}", sub.node_count, sub.update_time)))
                         .child(
                             div()
                                 .flex()
                                 .items_center()
                                 .gap_3()
-                                .child(div().text_color(rgb(0x64748B)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("34%"))
-                                .child(div().w(px(40.0)).h(px(4.0)).bg(rgb(0xE5E7EB)).rounded_full().child(div().w(relative(0.34)).h_full().bg(rgb(0x10B981)).rounded_full()))
+                                .child(div().text_color(rgb(0x64748B)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("34%"))
+                                .child(div().w(px(44.0)).h(px(4.0)).bg(rgb(0xF1F5F9)).rounded_full().child(div().w(relative(0.34)).h_full().bg(rgb(0x10B981)).rounded_full()))
                         )
                 )
         )
@@ -555,7 +561,7 @@ fn tab_item(
     on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     div()
-        .w(px(80.0)) // FIX: Standardized tab width
+        .w(px(80.0))
         .pb_3()
         .border_b(if active { px(2.5) } else { px(0.0) })
         .border_color(rgb(0x4F46E5))
@@ -579,7 +585,8 @@ fn form_row(label: String, val: String, has_icon: bool) -> impl IntoElement {
         .items_baseline()
         .child(
             div()
-                .w(px(100.0)) // FIX: Standardized label width
+                .w(px(100.0))
+                .flex_shrink_0()
                 .text_xs()
                 .font_weight(FontWeight::MEDIUM)
                 .text_color(rgb(0x64748B))
@@ -591,7 +598,8 @@ fn form_row(label: String, val: String, has_icon: bool) -> impl IntoElement {
                 .flex()
                 .items_baseline()
                 .gap_3()
-                .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(val))
+                .overflow_hidden()
+                .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).overflow_hidden().child(val))
                 .child(if has_icon { icon(IconName::ExternalLink, 14.0, rgb(0x94A3B8).into()).into_any_element() } else { div().into_any_element() })
         )
 }
@@ -603,19 +611,22 @@ fn info_row(label: String, val: String, success: bool) -> impl IntoElement {
         .gap_4()
         .child(
             div()
-                .w(px(100.0)) // FIX: Standardized label width
+                .w(px(100.0))
+                .flex_shrink_0()
                 .text_xs()
                 .text_color(rgb(0x64748B))
                 .child(label)
         )
         .child(
             div()
+                .flex_1()
                 .flex()
                 .items_baseline()
                 .gap_3()
-                .child(div().text_sm().font_weight(FontWeight::MEDIUM).text_color(rgb(0x0F172A)).child(val))
+                .overflow_hidden()
+                .child(div().text_sm().font_weight(FontWeight::MEDIUM).text_color(rgb(0x0F172A)).overflow_hidden().child(val))
                 .child(if success {
-                    div().bg(rgb(0xDCFCE7)).px_2().py_0p5().rounded_full().child(div().text_color(rgb(0x10B981)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("成功")).into_any_element()
+                    div().bg(rgb(0xDCFCE7)).px_2().py_0p5().rounded_full().flex_shrink_0().child(div().text_color(rgb(0x10B981)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("成功")).into_any_element()
                 } else {
                     div().into_any_element()
                 })
@@ -636,11 +647,13 @@ fn priority_item(index: &'static str, title: &'static str, sub: &'static str, ac
         .flex()
         .items_center()
         .gap_3()
+        .overflow_hidden()
         .child(
             div()
                 .size(px(26.0))
                 .bg(border)
                 .rounded_full()
+                .flex_shrink_0()
                 .flex()
                 .items_center()
                 .justify_center()
@@ -648,8 +661,10 @@ fn priority_item(index: &'static str, title: &'static str, sub: &'static str, ac
         )
         .child(
             div()
+                .flex_1()
                 .flex_col()
-                .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(title))
-                .child(div().text_xs().text_color(rgb(0x64748B)).child(sub.to_string()))
+                .overflow_hidden()
+                .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).overflow_hidden().child(title))
+                .child(div().text_xs().text_color(rgb(0x64748B)).overflow_hidden().child(sub.to_string()))
         )
 }
