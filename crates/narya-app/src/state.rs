@@ -132,6 +132,60 @@ impl AppState {
         }).detach();
     }
 
+    pub fn refresh_subscription(model: Entity<Self>, cx: &mut App, sub_id: String) {
+        let url = model.read(cx)
+            .subscriptions
+            .iter()
+            .find(|s| s.id == sub_id)
+            .map(|s| s.url.clone());
+
+        if let Some(url) = url {
+            cx.spawn(move |cx: &mut AsyncApp| {
+                let mut cx = cx.clone();
+                let model = model.clone();
+                async move {
+                    // Set status to "更新中..." (Updating...)
+                    let _ = model.update(&mut cx, |state, cx| {
+                        if let Some(sub) = state.subscriptions.iter_mut().find(|s| s.id == sub_id) {
+                            sub.status = "更新中...".to_string();
+                            cx.notify();
+                        }
+                    });
+
+                    if let Ok(content) = narya_subscription::fetch_remote_subscription(&url).await {
+                        if let Ok((format, new_nodes)) = narya_subscription::parse_subscription(&content) {
+                            let _ = model.update(&mut cx, |state, cx| {
+                                if let Some(sub) = state.subscriptions.iter_mut().find(|s| s.id == sub_id) {
+                                    sub.status = "更新成功".to_string();
+                                    sub.update_time = "刚刚".to_string();
+                                    sub.node_count = new_nodes.len() as u32;
+                                    sub.format = Some(format.as_str().to_string());
+                                }
+                                
+                                // Replace nodes for this demo. In a real app, we'd tag them and keep others.
+                                state.nodes = new_nodes;
+                                if let Some(first_node) = state.nodes.first() {
+                                    state.active_node_id = Some(first_node.id.clone());
+                                }
+                                
+                                cx.notify();
+                            });
+                            return;
+                        }
+                    }
+
+                    // If failed
+                    let _ = model.update(&mut cx, |state, cx| {
+                        if let Some(sub) = state.subscriptions.iter_mut().find(|s| s.id == sub_id) {
+                            sub.status = "更新失败".to_string();
+                            cx.notify();
+                        }
+                    });
+                }
+            }).detach();
+        }
+    }
+
     pub fn test_all_latency(model: Entity<Self>, cx: &mut App) {
         // Collect IDs first to avoid borrow checker issues with model.read(cx) and model.update(cx)
         let ids: Vec<String> = model.read(cx).nodes.iter().map(|n| n.id.clone()).collect();

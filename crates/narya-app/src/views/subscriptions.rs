@@ -115,6 +115,15 @@ pub fn render_subscriptions_view(
                                 .justify_center()
                                 .gap_2()
                                 .cursor_pointer()
+                                .on_mouse_down(MouseButton::Left, {
+                                    let model = model.clone();
+                                    let active_id = selected_sub_id.clone();
+                                    move |_, _, cx| {
+                                        if let Some(id) = active_id.clone() {
+                                            AppState::refresh_subscription(model.clone(), cx, id);
+                                        }
+                                    }
+                                })
                                 .child(icon(IconName::Github, 14.0, color_text_primary.into()))
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("手动刷新")),
                         ),
