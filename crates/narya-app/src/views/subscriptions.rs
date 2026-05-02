@@ -26,7 +26,6 @@ pub fn render_subscriptions_view(
         .flex_col()
         .size_full()
         .bg(color_bg)
-        .p_8()
         .gap_6()
         .child(
             // 1. Metrics Row
