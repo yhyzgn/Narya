@@ -1,3 +1,4 @@
+use crate::components::{icon, IconName};
 use crate::state::AppState;
 use crate::views::dashboard::render_dashboard_view;
 use crate::views::nodes::render_nodes_view;
@@ -119,54 +120,63 @@ impl Render for AppShell {
                                     .gap_1()
                                     .child(nav_item(
                                         "仪表盘",
+                                        IconName::Dashboard,
                                         view == ActiveView::Dashboard,
                                         cx,
                                         ActiveView::Dashboard,
                                     ))
                                     .child(nav_item(
                                         "节点",
+                                        IconName::Nodes,
                                         view == ActiveView::Nodes,
                                         cx,
                                         ActiveView::Nodes,
                                     ))
                                     .child(nav_item(
                                         "配置",
+                                        IconName::Config,
                                         view == ActiveView::Config,
                                         cx,
                                         ActiveView::Config,
                                     ))
                                     .child(nav_item(
                                         "订阅",
+                                        IconName::Subscriptions,
                                         view == ActiveView::Subscriptions,
                                         cx,
                                         ActiveView::Subscriptions,
                                     ))
                                     .child(nav_item(
                                         "连接",
+                                        IconName::Connections,
                                         view == ActiveView::Connections,
                                         cx,
                                         ActiveView::Connections,
                                     ))
                                     .child(nav_item(
                                         "规则",
+                                        IconName::Rules,
                                         view == ActiveView::Rules,
                                         cx,
                                         ActiveView::Rules,
                                     ))
                                     .child(nav_item(
                                         "日志",
+                                        IconName::Logs,
                                         view == ActiveView::Logs,
                                         cx,
                                         ActiveView::Logs,
                                     ))
                                     .child(nav_item(
                                         "工具箱",
+                                        IconName::Tools,
                                         view == ActiveView::Tools,
                                         cx,
                                         ActiveView::Tools,
                                     ))
                                     .child(nav_item(
                                         "设置",
+                                        IconName::Settings,
                                         view == ActiveView::Settings,
                                         cx,
                                         ActiveView::Settings,
@@ -242,9 +252,9 @@ impl Render for AppShell {
                                 div()
                                     .flex()
                                     .gap_3()
-                                    .child(action_icon("GH"))
-                                    .child(action_icon("🌙"))
-                                    .child(action_icon("🔔")),
+                                    .child(action_icon(IconName::Github))
+                                    .child(action_icon(IconName::Moon))
+                                    .child(action_icon(IconName::Bell)),
                             ),
                     ),
             )
@@ -299,8 +309,8 @@ impl Render for AppShell {
                                     .child(header_button("刷新全部", false))
                                     .child(header_button("导入", false))
                                     .child(header_button("导出", false))
-                                    .child(action_icon("⚙"))
-                                    .child(action_icon("⋮")),
+                                    .child(action_icon(IconName::Settings))
+                                    .child(action_icon(IconName::ExternalLink)),
                             ),
                     )
                     .child(
@@ -363,6 +373,7 @@ impl Render for AppShell {
 
 fn nav_item(
     label: &'static str,
+    icon_name: IconName,
     active: bool,
     cx: &mut Context<AppShell>,
     target_view: ActiveView,
@@ -394,7 +405,13 @@ fn nav_item(
                 .flex()
                 .items_center()
                 .gap_3()
-                .child(div().size(px(18.0)).bg(rgb(0x94A3B8)).rounded_sm()) // Icon placeholder
+                .child(
+                    icon(
+                        icon_name,
+                        18.0,
+                        if active { rgb(0x3B82F6).into() } else { rgb(0x6B7280).into() },
+                    )
+                )
                 .child(
                     div()
                         .text_sm()
@@ -409,7 +426,7 @@ fn nav_item(
         )
 }
 
-fn action_icon(label: &'static str) -> impl IntoElement {
+fn action_icon(icon_name: IconName) -> impl IntoElement {
     div()
         .size(px(32.0))
         .flex()
@@ -418,7 +435,7 @@ fn action_icon(label: &'static str) -> impl IntoElement {
         .rounded_md()
         .cursor_pointer()
         .hover(|s| s.bg(rgb(0xF3F4F6)))
-        .child(label)
+        .child(icon(icon_name, 18.0, rgb(0x6B7280).into()))
 }
 
 fn header_button(label: &'static str, primary: bool) -> impl IntoElement {

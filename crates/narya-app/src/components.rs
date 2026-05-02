@@ -1,10 +1,38 @@
 use gpui::{prelude::*, *};
 
-pub enum ToastKind {
-    Info,
-    Success,
-    Warning,
-    Error,
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IconName {
+    Dashboard,
+    Nodes,
+    Config,
+    Subscriptions,
+    Connections,
+    Rules,
+    Logs,
+    Tools,
+    Settings,
+    About,
+    Github,
+    Moon,
+    Bell,
+    ExternalLink,
+    Terminal,
+}
+
+pub fn icon(name: IconName, size: f32, color: Hsla) -> impl IntoElement {
+    // High-fidelity placeholder: stylized rounded box
+    // In real GPUI app with assets: svg().path(name.path())
+    div()
+        .size(px(size))
+        .flex()
+        .items_center()
+        .justify_center()
+        .child(
+            div()
+                .size(px(size * 0.7))
+                .bg(color)
+                .rounded_sm()
+        )
 }
 
 pub fn glass_card() -> Div {
@@ -71,4 +99,11 @@ pub fn toast(message: impl Into<String>, _kind: ToastKind) -> impl IntoElement {
                         ),
                 ),
         )
+}
+
+pub enum ToastKind {
+    Info,
+    Success,
+    Warning,
+    Error,
 }
