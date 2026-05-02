@@ -3,6 +3,16 @@ use narya_ipc::{IpcNotification, IpcRequest};
 use gpui::*;
 use std::time::Duration;
 use crate::ipc::IpcClient;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SubscriptionTab {
+    Overview,
+    Nodes,
+    Rules,
+    Conversion,
+    Advanced,
+}
 
 pub struct AppState {
     pub nodes: Vec<narya_core::Node>,
@@ -10,11 +20,31 @@ pub struct AppState {
     pub active_node_id: Option<String>,
     pub kernel_running: bool,
     pub filter_text: String,
+    
+    // Subscription specific state
+    pub selected_subscription_id: Option<String>,
+    pub active_subscription_tab: SubscriptionTab,
+    pub subscription_filter_text: String,
 }
 
 impl AppState {
     pub fn set_filter_text(&mut self, text: String, cx: &mut Context<Self>) {
         self.filter_text = text;
+        cx.notify();
+    }
+
+    pub fn set_subscription_filter_text(&mut self, text: String, cx: &mut Context<Self>) {
+        self.subscription_filter_text = text;
+        cx.notify();
+    }
+
+    pub fn select_subscription(&mut self, id: String, cx: &mut Context<Self>) {
+        self.selected_subscription_id = Some(id);
+        cx.notify();
+    }
+
+    pub fn set_subscription_tab(&mut self, tab: SubscriptionTab, cx: &mut Context<Self>) {
+        self.active_subscription_tab = tab;
         cx.notify();
     }
 
@@ -268,6 +298,9 @@ impl AppState {
             subscriptions,
             kernel_running: false,
             filter_text: String::new(),
+            selected_subscription_id: Some("sub-1".to_string()),
+            active_subscription_tab: SubscriptionTab::Overview,
+            subscription_filter_text: String::new(),
         }
     }
 }

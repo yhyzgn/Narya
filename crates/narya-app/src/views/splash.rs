@@ -22,7 +22,7 @@ impl Splash {
                 for i in 0..=100 {
                     cx_clone
                         .background_executor()
-                        .timer(Duration::from_millis(20))
+                        .timer(Duration::from_millis(10))
                         .await;
                     let _ = this.update(&mut cx_clone, |this, cx| {
                         this.progress = i as f32 / 100.0;

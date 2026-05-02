@@ -1,6 +1,5 @@
 use crate::components::{icon, IconName};
-use crate::state::AppState;
-use crate::theme::Theme;
+use crate::state::{AppState, SubscriptionTab};
 use crate::views::app_shell::AppShell;
 use gpui::{prelude::*, *};
 use narya_core::Subscription as NaryaSubscription;
@@ -10,9 +9,8 @@ pub fn render_subscriptions_view(
     cx: &mut Context<AppShell>,
 ) -> impl IntoElement {
     let state = model.read(cx);
-    let _theme = Theme::default();
 
-    // --- Definitive Colors from PNG ---
+    // --- Colors from PNG ---
     let color_bg = rgb(0xF8FAFC);
     let color_card = rgb(0xFFFFFF);
     let color_border = rgb(0xE2E8F0);
@@ -21,6 +19,23 @@ pub fn render_subscriptions_view(
     let color_text_primary = rgb(0x0F172A);
     let color_text_secondary = rgb(0x64748B);
     let color_text_muted = rgb(0x94A3B8);
+
+    let selected_sub_id = state.selected_subscription_id.clone();
+    let selected_sub = selected_sub_id
+        .as_ref()
+        .and_then(|id| state.subscriptions.iter().find(|s| s.id == *id));
+
+    // Pre-calculate owned strings for metrics to avoid lifetime issues
+    let current_sub_name = selected_sub.map(|s| s.name.clone()).unwrap_or_else(|| "未选择".to_string());
+    let node_count_str = selected_sub.map(|s| s.node_count.to_string()).unwrap_or_else(|| "0".to_string());
+    let node_stats_str = format!("{} 可用 / 0 失败", selected_sub.map(|s| s.used_nodes).unwrap_or(0));
+    let remaining_traffic_str = format!("{:.0} GB", selected_sub.map(|s| s.traffic_total - s.traffic_used).unwrap_or(0.0));
+    let traffic_stats_str = format!("已用 {:.0} GB / 总量 {:.1} TB", 
+        selected_sub.map(|s| s.traffic_used).unwrap_or(0.0),
+        selected_sub.map(|s| s.traffic_total / 1000.0).unwrap_or(0.0)
+    );
+    let expiration_str = selected_sub.map(|s| format!("{} 到期", s.expiration)).unwrap_or_else(|| "---".to_string());
+    let sub_url_display = selected_sub.map(|s| s.url.clone()).unwrap_or_else(|| "---".to_string());
 
     div()
         .flex_col()
@@ -35,33 +50,33 @@ pub fn render_subscriptions_view(
                 .gap_4()
                 .child(metric_card(
                     "当前订阅",
-                    "机场 A",
+                    current_sub_name.clone(),
                     Some("运行中"),
-                    "类型: 远程订阅",
+                    "类型: 远程订阅".to_string(),
                     IconName::Dashboard,
                     color_brand,
                 ))
                 .child(metric_card(
                     "节点总数",
-                    "128",
+                    node_count_str,
                     None,
-                    "38 可用 / 3 失败",
+                    node_stats_str,
                     IconName::Nodes,
                     rgb(0x3B82F6),
                 ))
                 .child(metric_card(
                     "剩余流量",
-                    "842 GB",
+                    remaining_traffic_str,
                     None,
-                    "已用 436 GB / 总量 1.28 TB",
+                    traffic_stats_str,
                     IconName::Config,
                     rgb(0x6366F1),
                 ))
                 .child(metric_card(
                     "到期时间",
-                    "42 天",
+                    "42 天".to_string(),
                     None,
-                    "2026-06-10 到期",
+                    expiration_str,
                     IconName::Subscriptions,
                     rgb(0x8B5CF6),
                 ))
@@ -109,7 +124,7 @@ pub fn render_subscriptions_view(
                 .gap_6()
                 .flex_1()
                 .child(
-                    // Column 1: List
+                    // Column 1: List (Source List with isolation)
                     div()
                         .flex_col()
                         .w(relative(0.3))
@@ -127,17 +142,33 @@ pub fn render_subscriptions_view(
                                 .px_3()
                                 .gap_2()
                                 .child(icon(IconName::Github, 16.0, color_text_muted.into()))
-                                .child(div().text_sm().text_color(color_text_muted).child("搜索订阅名称或 URL"))
+                                .child(
+                                    div()
+                                        .text_sm()
+                                        .text_color(if state.subscription_filter_text.is_empty() { color_text_muted } else { color_text_primary })
+                                        .child(if state.subscription_filter_text.is_empty() { "搜索订阅名称或 URL".to_string() } else { state.subscription_filter_text.clone() })
+                                )
                         )
                         .child(
                             div()
                                 .flex_col()
                                 .gap_3()
-                                .children(state.subscriptions.iter().map(|sub| subscription_card(sub, sub.name == "机场 A")))
+                                .children(state.subscriptions.iter()
+                                    .filter(|s| s.name.to_lowercase().contains(&state.subscription_filter_text.to_lowercase()))
+                                    .map(|sub| {
+                                        let is_selected = Some(sub.id.clone()) == selected_sub_id;
+                                        let model = model.clone();
+                                        let sub_id = sub.id.clone();
+                                        subscription_card(sub, is_selected, move |_, _, cx| {
+                                            model.update(cx, |state, cx| {
+                                                state.select_subscription(sub_id.clone(), cx);
+                                            });
+                                        })
+                                    }))
                         )
                 )
                 .child(
-                    // Column 2: Details Panel
+                    // Column 2: Details Panel (Isolated)
                     div()
                         .w(relative(0.4))
                         .flex_col()
@@ -154,21 +185,45 @@ pub fn render_subscriptions_view(
                                 .gap_8()
                                 .border_b_1()
                                 .border_color(color_border)
-                                .child(tab_item("概览", true))
-                                .child(tab_item("节点", false))
-                                .child(tab_item("规则", false))
-                                .child(tab_item("转换", false))
-                                .child(tab_item("高级", false))
+                                .child(tab_item("概览", state.active_subscription_tab == SubscriptionTab::Overview, {
+                                    let model = model.clone();
+                                    move |_, _, cx| {
+                                        model.update(cx, |state, cx| state.set_subscription_tab(SubscriptionTab::Overview, cx));
+                                    }
+                                }))
+                                .child(tab_item("节点", state.active_subscription_tab == SubscriptionTab::Nodes, {
+                                    let model = model.clone();
+                                    move |_, _, cx| {
+                                        model.update(cx, |state, cx| state.set_subscription_tab(SubscriptionTab::Nodes, cx));
+                                    }
+                                }))
+                                .child(tab_item("规则", state.active_subscription_tab == SubscriptionTab::Rules, {
+                                    let model = model.clone();
+                                    move |_, _, cx| {
+                                        model.update(cx, |state, cx| state.set_subscription_tab(SubscriptionTab::Rules, cx));
+                                    }
+                                }))
+                                .child(tab_item("转换", state.active_subscription_tab == SubscriptionTab::Conversion, {
+                                    let model = model.clone();
+                                    move |_, _, cx| {
+                                        model.update(cx, |state, cx| state.set_subscription_tab(SubscriptionTab::Conversion, cx));
+                                    }
+                                }))
+                                .child(tab_item("高级", state.active_subscription_tab == SubscriptionTab::Advanced, {
+                                    let model = model.clone();
+                                    move |_, _, cx| {
+                                        model.update(cx, |state, cx| state.set_subscription_tab(SubscriptionTab::Advanced, cx));
+                                    }
+                                }))
                         )
                         .child(
                             div()
                                 .flex_col()
                                 .gap_4()
-                                .child(form_row("名称", "机场 A", false))
-                                .child(form_row("订阅 URL", "https://*****************/sub", true))
-                                .child(form_row("User-Agent", "Narya/1.0.0 (Windows; sing-box)", true))
-                                .child(form_row("更新间隔", "30 分钟", true))
-                                .child(form_row("目标内核", "sing-box", true))
+                                .child(form_row("名称".to_string(), current_sub_name.clone(), false))
+                                .child(form_row("订阅 URL".to_string(), sub_url_display, true))
+                                .child(form_row("User-Agent".to_string(), "Narya/1.0.0 (Windows; sing-box)".to_string(), true))
+                                .child(form_row("更新间隔".to_string(), "30 分钟".to_string(), true))
                         )
                         .child(
                             div()
@@ -182,7 +237,6 @@ pub fn render_subscriptions_view(
                                         .items_center()
                                         .gap_8()
                                         .child(
-                                            // Realistic Circular Progress Simulation
                                             div()
                                                 .size(px(68.0))
                                                 .rounded_full()
@@ -197,14 +251,14 @@ pub fn render_subscriptions_view(
                                             div()
                                                 .flex_1()
                                                 .flex_col()
-                                                .gap_2()
+                                                .gap_3()
                                                 .child(
                                                     div()
                                                         .flex()
                                                         .justify_between()
                                                         .items_baseline()
-                                                        .child(div().flex_col().child(div().text_xs().text_color(color_text_secondary).child("已用流量")).child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_success).child("↓ 436 GB")))
-                                                        .child(div().flex_col().items_end().child(div().text_xs().text_color(color_text_secondary).child("总量")).child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("1.28 TB")))
+                                                        .child(div().flex_col().child(div().text_xs().text_color(color_text_secondary).child("已用流量")).child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_success).child(format!("↓ {:.0} GB", selected_sub.map(|s| s.traffic_used).unwrap_or(0.0)))))
+                                                        .child(div().flex_col().items_end().child(div().text_xs().text_color(color_text_secondary).child("总量")).child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child(format!("{:.1} TB", selected_sub.map(|s| s.traffic_total / 1000.0).unwrap_or(0.0)))))
                                                 )
                                                 .child(
                                                     div()
@@ -212,7 +266,7 @@ pub fn render_subscriptions_view(
                                                         .h(px(6.0))
                                                         .bg(rgb(0xF1F5F9))
                                                         .rounded_full()
-                                                        .child(div().w(relative(0.34)).h_full().bg(color_success).rounded_full())
+                                                        .child(div().w(relative(selected_sub.map(|s| s.traffic_used / s.traffic_total).unwrap_or(0.0) as f32)).h_full().bg(color_success).rounded_full())
                                                 )
                                         )
                                 )
@@ -221,12 +275,12 @@ pub fn render_subscriptions_view(
                             div()
                                 .flex_col()
                                 .gap_3()
-                                .child(info_row("到期时间", "2026-06-10 (42 天后)", false))
-                                .child(info_row("上次更新", "2024-04-29 17:28:42", true))
+                                .child(info_row("到期时间".to_string(), selected_sub.map(|s| s.expiration.clone()).unwrap_or_else(|| "---".to_string()), false))
+                                .child(info_row("上次更新".to_string(), selected_sub.map(|s| s.update_time.clone()).unwrap_or_else(|| "---".to_string()), true))
                         )
                 )
                 .child(
-                    // Column 3: Status Cards
+                    // Column 3: Status Cards (Isolated)
                     div()
                         .w(relative(0.3))
                         .flex_col()
@@ -356,7 +410,14 @@ pub fn render_subscriptions_view(
         )
 }
 
-fn metric_card(title: &'static str, val: &'static str, badge_text: Option<&'static str>, sub: &'static str, icon_name: IconName, color: Rgba) -> impl IntoElement {
+fn metric_card(
+    title: &'static str, 
+    val: String, 
+    badge_text: Option<&'static str>, 
+    sub: String, 
+    icon_name: IconName, 
+    color: Rgba
+) -> impl IntoElement {
     let mut icon_bg: Hsla = color.into();
     icon_bg.a = 0.1;
 
@@ -403,7 +464,11 @@ fn metric_card(title: &'static str, val: &'static str, badge_text: Option<&'stat
         )
 }
 
-fn subscription_card(sub: &NaryaSubscription, active: bool) -> impl IntoElement {
+fn subscription_card(
+    sub: &NaryaSubscription, 
+    active: bool,
+    on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
+) -> impl IntoElement {
     let border_color = if active { rgb(0x4F46E5) } else { rgb(0xE2E8F0) };
     let border_width = if active { px(2.0) } else { px(1.0) };
 
@@ -418,6 +483,8 @@ fn subscription_card(sub: &NaryaSubscription, active: bool) -> impl IntoElement 
         .p_5()
         .flex()
         .gap_4()
+        .cursor_pointer()
+        .on_mouse_down(MouseButton::Left, on_click)
         .child(
             div()
                 .size(px(44.0))
@@ -447,7 +514,7 @@ fn subscription_card(sub: &NaryaSubscription, active: bool) -> impl IntoElement 
                                 .child(if active {
                                     let mut bg: Hsla = rgb(0xEEF2FF).into();
                                     bg.a = 1.0;
-                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
+                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
                                 } else {
                                     div().into_any_element()
                                 })
@@ -473,11 +540,17 @@ fn subscription_card(sub: &NaryaSubscription, active: bool) -> impl IntoElement 
         )
 }
 
-fn tab_item(label: &'static str, active: bool) -> impl IntoElement {
+fn tab_item(
+    label: &'static str, 
+    active: bool,
+    on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
+) -> impl IntoElement {
     div()
         .pb_3()
         .border_b(if active { px(2.5) } else { px(0.0) })
         .border_color(rgb(0x4F46E5))
+        .cursor_pointer()
+        .on_mouse_down(MouseButton::Left, on_click)
         .child(
             div()
                 .text_sm()
@@ -487,7 +560,7 @@ fn tab_item(label: &'static str, active: bool) -> impl IntoElement {
         )
 }
 
-fn form_row(label: &'static str, val: &'static str, has_icon: bool) -> impl IntoElement {
+fn form_row(label: String, val: String, has_icon: bool) -> impl IntoElement {
     div()
         .flex()
         .justify_between()
@@ -503,7 +576,7 @@ fn form_row(label: &'static str, val: &'static str, has_icon: bool) -> impl Into
         )
 }
 
-fn info_row(label: &'static str, val: &'static str, success: bool) -> impl IntoElement {
+fn info_row(label: String, val: String, success: bool) -> impl IntoElement {
     div()
         .flex()
         .items_baseline()
@@ -551,6 +624,6 @@ fn priority_item(index: &'static str, title: &'static str, sub: &'static str, ac
             div()
                 .flex_col()
                 .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(title))
-                .child(div().text_xs().text_color(rgb(0x64748B)).child(sub))
+                .child(div().text_xs().text_color(rgb(0x64748B)).child(sub.to_string()))
         )
 }
