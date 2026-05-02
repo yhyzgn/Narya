@@ -12,7 +12,7 @@ pub fn render_subscriptions_view(
     let state = model.read(cx);
     let _theme = Theme::default();
 
-    // --- High-Fidelity Colors ---
+    // --- High-Fidelity Colors (Re-defined for consistency) ---
     let color_bg = rgb(0xF8FAFC);
     let color_card = rgb(0xFFFFFF);
     let color_border = rgb(0xE2E8F0);
@@ -103,12 +103,11 @@ pub fn render_subscriptions_view(
                 ),
         )
         .child(
-            // 2. Main Layout
+            // 2. Middle Row (The Main Content)
             div()
                 .flex()
                 .w_full()
                 .gap_6()
-                .flex_1()
                 .child(
                     // Column 1: List
                     div()
@@ -169,13 +168,12 @@ pub fn render_subscriptions_view(
                                 .child(form_row("订阅 URL", "https://*****************/sub", true))
                                 .child(form_row("User-Agent", "Narya/1.0.0 (Windows; sing-box)", true))
                                 .child(form_row("更新间隔", "30 分钟", true))
-                                .child(form_row("目标内核", "sing-box", true))
-                                .child(form_row("转换模板", "Narya Standard", true))
                         )
                         .child(
                             div()
                                 .flex_col()
                                 .gap_4()
+                                .mt_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("流量配额"))
                                 .child(
                                     div()
@@ -222,7 +220,6 @@ pub fn render_subscriptions_view(
                                 .gap_3()
                                 .child(info_row("到期时间", "2026-06-10 (42 天后)", false))
                                 .child(info_row("上次更新", "2024-04-29 17:28:42", true))
-                                .child(info_row("下次更新", "2024-04-29 17:58:42", false))
                         )
                 )
                 .child(
@@ -250,7 +247,6 @@ pub fn render_subscriptions_view(
                                         .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_success).child("更新成功"))
                                 )
                                 .child(div().flex().justify_between().text_sm().child(div().text_color(color_text_secondary).child("延迟")).child(div().text_color(color_text_primary).child("128 ms")))
-                                .child(div().flex().justify_between().text_sm().child(div().text_color(color_text_secondary).child("下载时间")).child(div().text_color(color_text_primary).child("1.82 s")))
                                 .child(
                                     div()
                                         .w_full()
@@ -282,7 +278,86 @@ pub fn render_subscriptions_view(
                                         .child(div().w(px(36.0)).h(px(20.0)).bg(color_brand).rounded_full())
                                 )
                                 .child(div().flex().justify_between().text_sm().child(div().text_color(color_text_secondary).child("更新间隔")).child(div().text_color(color_text_primary).child("每 30 分钟")))
-                                .child(div().flex().justify_between().text_sm().child(div().text_color(color_text_secondary).child("启动时更新")).child(div().text_color(color_text_primary).child("已开启")))
+                        )
+                )
+        )
+        .child(
+            // 3. Bottom Row (The "Missing" Sections)
+            div()
+                .flex()
+                .w_full()
+                .gap_6()
+                .child(
+                    // Traffic Trend (Left)
+                    div()
+                        .w(relative(0.55))
+                        .flex_col()
+                        .bg(color_card)
+                        .border_1()
+                        .border_color(color_border)
+                        .rounded_2xl()
+                        .p_6()
+                        .gap_6()
+                        .child(
+                            div()
+                                .flex()
+                                .justify_between()
+                                .items_end()
+                                .child(
+                                    div()
+                                        .flex()
+                                        .items_baseline()
+                                        .gap_3()
+                                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("流量趋势"))
+                                        .child(div().text_xs().text_color(color_text_secondary).child("(最近 30 天)"))
+                                )
+                                .child(
+                                    div()
+                                        .h(px(32.0))
+                                        .px_3()
+                                        .bg(color_bg)
+                                        .border_1()
+                                        .border_color(color_border)
+                                        .rounded_lg()
+                                        .flex()
+                                        .items_center()
+                                        .child(div().text_xs().text_color(color_text_primary).child("30 天 ▾"))
+                                )
+                        )
+                        .child(
+                            div()
+                                .h(px(160.0))
+                                .w_full()
+                                .bg(rgb(0xFAFBFE)) // Slightly different bg for chart
+                                .rounded_xl()
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .child(div().text_xs().text_color(color_text_muted).child("Fidelity Area Chart Placeholder"))
+                        )
+                )
+                .child(
+                    // Subscription Priority (Right)
+                    div()
+                        .w(relative(0.45))
+                        .flex_col()
+                        .gap_4()
+                        .child(
+                            div()
+                                .flex_col()
+                                .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅优先级"))
+                                .child(div().text_xs().text_color(color_text_secondary).child("按优先级从高到低使用，拖拽可调整顺序"))
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .items_center()
+                                .gap_2()
+                                .child(priority_card("1", "远程订阅", "机场 A", true))
+                                .child(div().text_lg().text_color(color_text_muted).child("→"))
+                                .child(priority_card("2", "本地覆写", "Narya Default", false))
+                                .child(div().text_lg().text_color(color_text_muted).child("→"))
+                                .child(priority_card("3", "UI 临时", "活动中", false))
                         )
                 )
         )
@@ -324,9 +399,7 @@ fn metric_card(title: &'static str, val: &'static str, badge_text: Option<&'stat
                         .gap_3()
                         .child(div().text_2xl().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(val))
                         .child(if let Some(t) = badge_text {
-                            let mut bg: Hsla = rgb(0xDCFCE7).into();
-                            bg.a = 1.0;
-                            div().bg(bg).px_2().py_0p5().rounded_full().child(div().text_color(rgb(0x10B981)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child(t)).into_any_element()
+                            div().bg(rgb(0xDCFCE7)).px_2().py_0p5().rounded_full().child(div().text_color(rgb(0x10B981)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child(t)).into_any_element()
                         } else {
                             div().into_any_element()
                         })
@@ -376,9 +449,7 @@ fn subscription_card(sub: &NaryaSubscription, active: bool) -> impl IntoElement 
                                 .gap_2()
                                 .child(div().text_base().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(sub.name.clone()))
                                 .child(if active {
-                                    let mut active_bg: Hsla = rgb(0xEEF2FF).into();
-                                    active_bg.a = 1.0;
-                                    div().bg(active_bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
+                                    div().bg(rgb(0xEEF2FF)).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
                                 } else {
                                     div().into_any_element()
                                 })
@@ -451,5 +522,37 @@ fn info_row(label: &'static str, val: &'static str, success: bool) -> impl IntoE
                 } else {
                     div().into_any_element()
                 })
+        )
+}
+
+fn priority_card(index: &'static str, title: &'static str, sub: &'static str, active: bool) -> impl IntoElement {
+    let bg = if active { rgb(0xEEF2FF) } else { rgb(0xFFFFFF) };
+    let border = if active { rgb(0x4F46E5) } else { rgb(0xE2E8F0) };
+
+    div()
+        .flex_1()
+        .bg(bg)
+        .border_1()
+        .border_color(border)
+        .rounded_2xl()
+        .p_4()
+        .flex()
+        .items_center()
+        .gap_3()
+        .child(
+            div()
+                .size(px(26.0))
+                .bg(border)
+                .rounded_full()
+                .flex()
+                .items_center()
+                .justify_center()
+                .child(div().text_color(white()).text_size(px(11.0)).font_weight(FontWeight::BOLD).child(index))
+        )
+        .child(
+            div()
+                .flex_col()
+                .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(rgb(0x0F172A)).child(title))
+                .child(div().text_color(rgb(0x64748B)).text_size(px(11.0)).child(sub))
         )
 }
