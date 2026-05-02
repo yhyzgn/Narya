@@ -54,7 +54,7 @@ impl Render for AppShell {
         let is_running = state_ref.kernel_running;
 
         // --- SPEC CONSTANTS ---
-        let sidebar_width = px(270.0);
+        let sidebar_width = px(220.0);
         let header_height = px(64.0);
         let footer_height = px(36.0);
 

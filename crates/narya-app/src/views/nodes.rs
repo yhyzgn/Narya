@@ -23,10 +23,10 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 .justify_between()
                 .mb_6()
                 .child(
-                    // Search Input (Custom built for high fidelity)
+                    // Search Input - Fixed width
                     div()
-                        .w(px(320.0))
-                        .h(px(36.0))
+                        .w(px(360.0))
+                        .h(px(40.0))
                         .bg(rgb(0xFFFFFF))
                         .border_1()
                         .border_color(rgb(0xE5E7EB))
@@ -35,11 +35,8 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                         .items_center()
                         .px_3()
                         .gap_2()
-                        .child("🔍") // Placeholder icon
+                        .child("🔍") 
                         .child(
-                            // Note: GPUI 0.2 doesn't have a standard 'text_input' yet, 
-                            // we would usually use a separate view or handle events manually.
-                            // For this task, we will simulate the filter via a state update call.
                             div()
                                 .text_sm()
                                 .text_color(if filter_text.is_empty() { theme.text_muted } else { theme.text_primary })
@@ -66,9 +63,9 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 ),
         )
         .child(
-            // Node List (Middle)
+            // Node List - Grows to fill space
             div()
-                .flex_1()
+                .flex_grow()
                 .overflow_hidden()
                 .flex_col()
                 .gap_3()
@@ -90,16 +87,17 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 })),
         )
         .child(
-            // Bottom Area (Chart + Details)
+            // Bottom Area - Fixed height with robust horizontal distribution
             div()
                 .flex()
                 .flex_row()
                 .gap_6()
-                .h(px(240.0))
+                .h(px(260.0))
                 .child(
-                    // Latency Trend Card
+                    // Latency Trend Card - Proportional growth
                     glass_card()
-                        .flex_1()
+                        .flex_grow()
+                        .min_w(px(600.0))
                         .child(
                             div()
                                 .flex_col()
@@ -108,7 +106,7 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                         )
                 )
                 .child(
-                    // Node Details Card (Strictly follow design)
+                    // Node Details Card - Fixed min-width for stability
                     render_node_details_card(state.active_node_id.as_deref(), &state.nodes)
                 )
         )
@@ -118,11 +116,12 @@ fn render_node_details_card(active_id: Option<&str>, nodes: &[narya_core::Node])
     let node = active_id.and_then(|id| nodes.iter().find(|n| n.id == id));
     
     glass_card()
-        .w(px(320.0))
+        .w(px(400.0)) // Fixed width for details to maintain form alignment
+        .flex_shrink_0()
         .child(
             div()
                 .flex_col()
-                .gap_2()
+                .gap_3()
                 .child(div().text_sm().font_weight(FontWeight::BOLD).child(format!("节点详情 ({})", node.map(|n| n.name.as_str()).unwrap_or("未选择"))))
                 .child(detail_row("地址", node.map(|n| n.details.address.as_str()).unwrap_or("-")))
                 .child(detail_row("协议", node.map(|n| n.protocol.as_str()).unwrap_or("-")))

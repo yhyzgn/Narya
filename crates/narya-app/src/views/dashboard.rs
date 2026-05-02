@@ -17,9 +17,10 @@ pub fn render_dashboard_view(model: &Entity<AppState>, cx: &mut Context<AppShell
                 .flex()
                 .gap_6()
                 .child(
-                    // Quick Connect Card
+                    // Quick Connect Card - Fixed Min-Width
                     glass_card()
-                        .w(px(400.0))
+                        .w(px(420.0))
+                        .flex_shrink_0()
                         .child(
                             div()
                                 .flex_col()
@@ -78,9 +79,9 @@ pub fn render_dashboard_view(model: &Entity<AppState>, cx: &mut Context<AppShell
                         ),
                 )
                 .child(
-                    // Stats Grid
+                    // Stats Grid - Proportional growth
                     div()
-                        .flex_1()
+                        .flex_grow()
                         .flex_col()
                         .gap_4()
                         .child(
@@ -103,17 +104,20 @@ pub fn render_dashboard_view(model: &Entity<AppState>, cx: &mut Context<AppShell
 
 fn stat_card(label: &'static str, value: &'static str, color: Hsla) -> impl IntoElement {
     let theme = Theme::default();
-    glass_card().flex_1().child(
-        div()
-            .flex_col()
-            .child(div().text_xs().text_color(theme.text_secondary).child(label))
-            .child(
-                div()
-                    .mt_1()
-                    .text_2xl()
-                    .font_weight(FontWeight::BOLD)
-                    .text_color(color)
-                    .child(value),
-            ),
-    )
+    glass_card()
+        .flex_grow()
+        .min_w(px(200.0)) // Ensure a reasonable display even when window is at min-size
+        .child(
+            div()
+                .flex_col()
+                .child(div().text_xs().text_color(theme.text_secondary).child(label))
+                .child(
+                    div()
+                        .mt_1()
+                        .text_2xl()
+                        .font_weight(FontWeight::BOLD)
+                        .text_color(color)
+                        .child(value),
+                ),
+        )
 }
