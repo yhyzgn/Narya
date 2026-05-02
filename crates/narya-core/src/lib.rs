@@ -1,8 +1,10 @@
+use serde::{Deserialize, Serialize};
+
 pub fn hello_core() -> &'static str {
     "hello from core"
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Node {
     pub id: String,
     pub name: String,
@@ -16,7 +18,7 @@ pub struct Node {
     pub details: NodeDetails,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct NodeDetails {
     pub address: String,
     pub encryption: String,
@@ -27,7 +29,7 @@ pub struct NodeDetails {
     pub last_test: String,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Subscription {
     pub id: String,
     pub name: String,

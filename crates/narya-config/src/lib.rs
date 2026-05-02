@@ -1,14 +1,26 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use narya_core::Node;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
+use anyhow::Result;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Profile {
+    pub name: String,
+    pub nodes: Vec<Node>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+pub fn save_profile(path: PathBuf, profile: &Profile) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
     }
+    let yaml = serde_yaml::to_string(profile)?;
+    fs::write(path, yaml)?;
+    Ok(())
+}
+
+pub fn load_profile(path: PathBuf) -> Result<Profile> {
+    let yaml = fs::read_to_string(path)?;
+    let profile: Profile = serde_yaml::from_str(&yaml)?;
+    Ok(profile)
 }

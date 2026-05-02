@@ -24,20 +24,22 @@
 ### 下一步
 - Phase 2: 在 GPUI 中重建 Splash 与 Dashboard 页面。
 
-## 2026-05-02 — Advanced Features & Interactive Logic
+## 2026-05-02 — Backend IPC Integration & Crate Decoupling
 
 ### 已完成
-- **实时测速模拟**：实现了异步 Latency Test 逻辑，使用 `cx.spawn` 在后台线程模拟网络延迟并在前端实时回显结果。
-- **动态网速监控**：建立了全局流量监测定时任务（1s/次），侧边栏 Footer 可根据当前活动节点实时显示随机波动的网速信息。
-- **高保真详情面板**：在 Nodes 页面右下角实现了固定位置的“节点详情”面板，严格按照 `ui/nodes.png` 还原了地址、协议、加密、UDP/TLS 等业务字段。
-- **UI 组件打磨**：优化了 `Badge` 和 `node_card` 的视觉样式，根据选中状态动态切换边框与背景色，视觉对齐最新的规格要求。
-- **代码规范化**：解决了 Unit Value 绑定、未使用的 Theme 变量等 Clippy 警告，确保全工作区编译通过。
+- **建立 IPC 通信层**：在 `narya-ipc` 中定义了标准 JSON-RPC 2.0 协议，包含异步 Request/Response 和 Notification 机制。
+- **后台 Daemon 服务**：实现了 `narya-daemon` 独立服务，基于 `tokio` 监听 Unix Domain Socket (`/tmp/narya.sock`)。
+- **UI 端集成**：在 `narya-app` 中开发了 `IpcClient` 模块，并将其无缝接入 `AppState` 的实时更新循环中。
+- **架构冲突修复**：解决了 `narya_core` 与 `gpui` (如 `Subscription`) 的命名冲突，通过全限定路径引用确保了类型安全性。
+- **递归限制优化**：在 `narya-app` crate root 增加了 `recursion_limit`，解决了 GPUI 复杂宏展开导致的栈溢出问题。
 
 ### 修改文件
-- `crates/narya-app/src/state.rs` (异步模拟逻辑)
-- `crates/narya-app/src/views/nodes.rs` (详情面板与布局重构)
-- `crates/narya-app/src/views/app_shell.rs` (侧边栏 Footer 实时更新)
+- `crates/narya-ipc/*` (新 crate)
+- `crates/narya-daemon/*` (新 crate)
+- `crates/narya-app/src/ipc.rs` (新模块)
+- `crates/narya-app/src/state.rs` (集成逻辑)
 
 ### 下一步
-- Phase 6: 建立 `narya-daemon` 核心通信骨架，对接真实的系统代理控制与内核 API。
+- Phase 7: 实现真实的 sing-box 内核编排、系统代理原子切换及配置持久化。
+
 

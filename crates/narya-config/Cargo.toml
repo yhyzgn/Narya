@@ -7,3 +7,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+anyhow = "1.0"
+narya-core = { path = "../narya-core" }

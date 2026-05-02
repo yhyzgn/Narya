@@ -48,10 +48,18 @@
 - [x] 开发 Nodes 页面右下角的固定“节点详情”展示面板，严格对齐 UI
 - [x] 实现节点选中后的全局状态同步
 
-## Phase 6：后端内核集成 (Kernel Integration)
+## Phase 6：后端 IPC 通信集成
+状态：已完成 ✅
+
+- [x] 在 `narya-ipc` 中定义 Request/Response/Notification 协议
+- [x] 实现 `narya-daemon` 基础 UDS 监听服务
+- [x] 在 `narya-app` 中集成 IPC Client 并对接 `AppState`
+- [x] 解决 `narya-core` 与 `gpui` 的命名空间冲突问题
+
+## Phase 7：内核编排与系统控制
 状态：进行中 🏗️
 
-- [ ] 在 `narya-daemon` 中建立基于 RPC (如 JSON-RPC 或 gRPC) 的通信骨架
-- [ ] 实现 `narya-app` 调用 Daemon 接口切换系统代理开关
-- [ ] 接入 `sing-box` API 获取真实的活动连接列表与流量统计
-- [ ] 实现基础配置文件的加载、校验与实时应用逻辑
+- [ ] 实现 `narya-daemon` 对 `sing-box` 二进制文件的进程生命周期管理
+- [ ] 编写跨平台（Linux/macOS）系统代理切换原子逻辑
+- [ ] 建立基于 `narya-config` 的 YAML 配置持久化层
+- [ ] 实现从 Daemon 到 App 的实时流量数据流推送
