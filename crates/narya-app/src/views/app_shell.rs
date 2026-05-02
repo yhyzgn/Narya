@@ -17,7 +17,7 @@ impl AppShell {
         AppState::start_traffic_monitor(state.clone(), cx);
 
         // Default and Min size: 1536 x 980
-        let size = size(px(1536.0), px(980.0));
+        let size = size(px(1536.0), px(1000.0));
         let bounds = Bounds::centered(None, size, cx);
         cx.open_window(
             WindowOptions {
