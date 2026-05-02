@@ -20,6 +20,7 @@ impl AppShell {
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
+                window_min_size: Some(size),
                 // WindowOptions kind might have min_size depending on GPUI version, 
                 // but usually it's handled via bounds or window_min_size.
                 ..Default::default()

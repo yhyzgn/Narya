@@ -88,7 +88,7 @@ pub fn render_subscriptions_view(
                         .w(px(160.0)) // Fixed width for actions
                         .child(
                             div()
-                                .flex_1()
+                                .h(px(42.0))
                                 .bg(color_brand)
                                 .text_color(white())
                                 .rounded_lg()
@@ -102,7 +102,7 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
-                                .flex_1()
+                                .h(px(42.0))
                                 .bg(color_card)
                                 .border_1()
                                 .border_color(color_border)
