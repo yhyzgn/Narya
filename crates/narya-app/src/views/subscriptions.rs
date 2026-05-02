@@ -384,21 +384,21 @@ pub fn render_subscriptions_view(
                                     let detected_format = selected_sub.and_then(|s| s.format.as_deref()).unwrap_or("");
                                     div()
                                         .flex_col()
-                                        .gap_8()
+                                        .gap_5()
                                         .child(
                                             div()
                                                 .flex()
                                                 .items_center()
                                                 .gap_3()
-                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("识别结果"))
+                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("识别结果："))
                                                 .child(
                                                     div()
                                                         .flex()
-                                                        .gap_2()
-                                                        .child(recognition_tag("Clash", detected_format.contains("Clash")))
-                                                        .child(recognition_tag("V2Ray", detected_format.contains("V2Ray")))
-                                                        .child(recognition_tag("sing-box", detected_format.contains("Sing-box")))
-                                                        .child(recognition_tag("Base64", detected_format.contains("Base64")))
+                                                        .gap_1p5()
+                                                        .child(recognition_tag("Clash", detected_format.contains("Clash"), color_success))
+                                                        .child(recognition_tag("V2Ray", detected_format.contains("V2Ray"), color_success))
+                                                        .child(recognition_tag("sing-box", detected_format.contains("Sing-box"), color_success))
+                                                        .child(recognition_tag("Base64", detected_format.contains("Base64"), color_success))
                                                 )
                                         )
                                         .child(
@@ -406,8 +406,8 @@ pub fn render_subscriptions_view(
                                                 .flex()
                                                 .items_center()
                                                 .gap_3()
-                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("当前格式"))
-                                                .child(recognition_tag(detected_format, !detected_format.is_empty()))
+                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("当前格式："))
+                                                .child(recognition_tag(detected_format, !detected_format.is_empty(), color_brand))
                                         )
                                 })
                         )
@@ -644,13 +644,12 @@ fn tab_item(
         )
 }
 
-fn recognition_tag(label: &str, active: bool) -> impl IntoElement {
-    let color_green = rgb(0x10B981);
-    let mut bg: Hsla = color_green.into();
-    bg.a = 0.1; // Translucent light green background
+fn recognition_tag(label: &str, active: bool, active_color: Rgba) -> impl IntoElement {
+    let mut bg: Hsla = active_color.into();
+    bg.a = 0.1; // Translucent background
 
     let (bg_final, text_color, border_color) = if active {
-        (bg, color_green, color_green)
+        (bg, active_color, active_color)
     } else {
         (rgb(0xF1F5F9).into(), rgb(0x94A3B8), rgb(0xE2E8F0))
     };
