@@ -43,11 +43,11 @@ pub fn render_subscriptions_view(
         .bg(color_bg)
         .gap_6()
         .child(
-            // 1. Top Metrics Row - Standardized heights and min-widths
+            // 1. Top Metrics Row - FULLY DETERMINISTIC
             div()
                 .flex()
                 .w_full()
-                .h(px(100.0)) // Fixed height for metrics
+                .h(px(100.0))
                 .gap_4()
                 .child(metric_card(
                     "当前订阅",
@@ -85,7 +85,8 @@ pub fn render_subscriptions_view(
                     div()
                         .flex_col()
                         .gap_3()
-                        .w(px(160.0)) // Fixed width for actions
+                        .w(px(160.0))
+                        .flex_shrink_0()
                         .child(
                             div()
                                 .h(px(42.0))
@@ -118,14 +119,14 @@ pub fn render_subscriptions_view(
                 ),
         )
         .child(
-            // 2. Main Middle Section - MIN-SIZE DRIVEN
+            // 2. Main Middle Section
             div()
                 .flex()
                 .w_full()
                 .gap_6()
                 .flex_1()
                 .child(
-                    // Column 1: List (Min-width 380px)
+                    // Column 1: List
                     div()
                         .flex_col()
                         .w(px(380.0))
@@ -171,7 +172,7 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Column 2: Details Panel (Min-width 560px, grows more)
+                    // Column 2: Details Panel
                     div()
                         .w(px(560.0))
                         .flex_grow()
@@ -186,7 +187,7 @@ pub fn render_subscriptions_view(
                         .child(
                             div()
                                 .flex()
-                                .gap_8()
+                                .gap_4() // Reduced gap for standardized tabs
                                 .border_b_1()
                                 .border_color(color_border)
                                 .child(tab_item("概览", state.active_subscription_tab == SubscriptionTab::Overview, {
@@ -243,7 +244,7 @@ pub fn render_subscriptions_view(
                                         .gap_8()
                                         .child(
                                             div()
-                                                .size(px(68.0))
+                                                .size(px(72.0))
                                                 .rounded_full()
                                                 .border_4()
                                                 .border_color(color_success)
@@ -268,7 +269,7 @@ pub fn render_subscriptions_view(
                                                 .child(
                                                     div()
                                                         .w_full()
-                                                        .h(px(6.0))
+                                                        .h(px(8.0))
                                                         .bg(rgb(0xF1F5F9))
                                                         .rounded_full()
                                                         .child(div().w(relative(selected_sub.map(|s| s.traffic_used / s.traffic_total).unwrap_or(0.0) as f32)).h_full().bg(color_success).rounded_full())
@@ -285,7 +286,7 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Column 3: Status (Min-width 300px)
+                    // Column 3: Status
                     div()
                         .w(px(300.0))
                         .flex_grow()
@@ -313,7 +314,7 @@ pub fn render_subscriptions_view(
                                 .child(
                                     div()
                                         .w_full()
-                                        .h(px(36.0))
+                                        .h(px(38.0))
                                         .bg(rgb(0xF1F5F9))
                                         .rounded_lg()
                                         .flex()
@@ -346,11 +347,11 @@ pub fn render_subscriptions_view(
                 )
         )
         .child(
-            // 3. Bottom Sections - Standardized heights
+            // 3. Bottom Sections
             div()
                 .flex()
                 .w_full()
-                .h(px(240.0)) // Fixed height for bottom analytics
+                .h(px(240.0))
                 .gap_6()
                 .child(
                     // Traffic Analytics
@@ -430,6 +431,7 @@ fn metric_card(
 
     div()
         .flex_1()
+        .min_w(px(260.0)) // FIX: Ensure cards don't collapse or expand based on content
         .bg(rgb(0xFFFFFF))
         .border_1()
         .border_color(rgb(0xE2E8F0))
@@ -521,7 +523,7 @@ fn subscription_card(
                                 .child(if active {
                                     let mut bg: Hsla = rgb(0xEEF2FF).into();
                                     bg.a = 1.0;
-                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
+                                    div().bg(bg).px_2().py_0p5().rounded_md().child(div().text_color(rgb(0x4F46E5)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("当前使用")).into_any_element()
                                 } else {
                                     div().into_any_element()
                                 })
@@ -540,7 +542,7 @@ fn subscription_card(
                                 .flex()
                                 .items_center()
                                 .gap_3()
-                                .child(div().text_color(rgb(0x64748B)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("34%"))
+                                .child(div().text_color(rgb(0x64748B)).text_size(px(11.0)).font_weight(FontWeight::BOLD).child("34%"))
                                 .child(div().w(px(40.0)).h(px(4.0)).bg(rgb(0xE5E7EB)).rounded_full().child(div().w(relative(0.34)).h_full().bg(rgb(0x10B981)).rounded_full()))
                         )
                 )
@@ -553,11 +555,14 @@ fn tab_item(
     on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     div()
+        .w(px(80.0)) // FIX: Standardized tab width
         .pb_3()
         .border_b(if active { px(2.5) } else { px(0.0) })
         .border_color(rgb(0x4F46E5))
         .cursor_pointer()
         .on_mouse_down(MouseButton::Left, on_click)
+        .flex()
+        .justify_center()
         .child(
             div()
                 .text_sm()
@@ -572,9 +577,17 @@ fn form_row(label: String, val: String, has_icon: bool) -> impl IntoElement {
         .flex()
         .justify_between()
         .items_baseline()
-        .child(div().text_xs().font_weight(FontWeight::MEDIUM).text_color(rgb(0x64748B)).child(label))
         .child(
             div()
+                .w(px(100.0)) // FIX: Standardized label width
+                .text_xs()
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(rgb(0x64748B))
+                .child(label)
+        )
+        .child(
+            div()
+                .flex_1()
                 .flex()
                 .items_baseline()
                 .gap_3()
@@ -588,7 +601,13 @@ fn info_row(label: String, val: String, success: bool) -> impl IntoElement {
         .flex()
         .items_baseline()
         .gap_4()
-        .child(div().w(px(100.0)).text_xs().text_color(rgb(0x64748B)).child(label))
+        .child(
+            div()
+                .w(px(100.0)) // FIX: Standardized label width
+                .text_xs()
+                .text_color(rgb(0x64748B))
+                .child(label)
+        )
         .child(
             div()
                 .flex()
