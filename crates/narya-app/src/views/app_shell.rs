@@ -18,14 +18,10 @@ impl AppShell {
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
-                titlebar: Some(TitlebarOptions {
-                    title: None,
-                    appears_transparent: true,
-                    ..Default::default()
-                }),
+                // Standard titlebar handled by GPUI/System
                 ..Default::default()
             },
-            |_, cx| {
+            move |_, cx| {
                 cx.new(|_| AppShell {
                     active_view: ActiveView::Dashboard,
                     state,
@@ -48,9 +44,8 @@ impl Render for AppShell {
             .map(|n| n.name.clone())
             .unwrap_or_else(|| "Not Connected".to_string());
 
-        // --- SPEC CONSTANTS (from detailed JSON/MD) ---
+        // --- SPEC CONSTANTS ---
         let sidebar_width = px(220.0);
-        let titlebar_height = px(48.0);
         let header_height = px(64.0);
         let footer_height = px(36.0);
 
@@ -65,350 +60,293 @@ impl Render for AppShell {
         div()
             .size_full()
             .flex()
-            .flex_col()
+            .flex_row() // Sidebar on the left, everything else on the right
             .bg(color_surface)
             .text_color(color_text_primary)
             .child(
-                // --- 1. TitleBar (48px) ---
+                // --- 1. Sidebar (220px fixed) ---
                 div()
-                    .h(titlebar_height)
-                    .w_full()
+                    .w(sidebar_width)
+                    .h_full()
                     .flex()
-                    .items_center()
+                    .flex_col()
                     .justify_between()
-                    .px_4()
-                    .border_b_1()
+                    .border_r_1()
                     .border_color(color_border)
+                    .bg(color_surface)
                     .child(
-                        // Left Title Section
                         div()
-                            .flex()
-                            .items_center()
-                            .gap_2()
-                            .child(img("resources/assets/logo.png").size(px(24.0)))
+                            .flex_col()
                             .child(
+                                // Sidebar Brand Area
                                 div()
-                                    .text_sm()
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .child("Narya"),
+                                    .h(px(60.0))
+                                    .flex()
+                                    .items_center()
+                                    .px_5()
+                                    .gap_2()
+                                    .child(img("resources/assets/logo.png").size(px(32.0)))
+                                    .child(
+                                        div()
+                                            .flex_col()
+                                            .child(
+                                                div()
+                                                    .text_base()
+                                                    .font_weight(FontWeight::BOLD)
+                                                    .child("Narya"),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .text_color(color_text_secondary)
+                                                    .child("v1.0.0"),
+                                            ),
+                                    ),
                             )
                             .child(
+                                // Menu List
                                 div()
-                                    .text_xs()
-                                    .text_color(color_text_secondary)
-                                    .child("v1.0.0"),
+                                    .flex_col()
+                                    .p_2()
+                                    .gap_1()
+                                    .child(nav_item(
+                                        "仪表盘",
+                                        view == ActiveView::Dashboard,
+                                        cx,
+                                        ActiveView::Dashboard,
+                                    ))
+                                    .child(nav_item(
+                                        "节点",
+                                        view == ActiveView::Nodes,
+                                        cx,
+                                        ActiveView::Nodes,
+                                    ))
+                                    .child(nav_item(
+                                        "配置",
+                                        view == ActiveView::Config,
+                                        cx,
+                                        ActiveView::Config,
+                                    ))
+                                    .child(nav_item(
+                                        "订阅",
+                                        view == ActiveView::Subscriptions,
+                                        cx,
+                                        ActiveView::Subscriptions,
+                                    ))
+                                    .child(nav_item(
+                                        "连接",
+                                        view == ActiveView::Connections,
+                                        cx,
+                                        ActiveView::Connections,
+                                    ))
+                                    .child(nav_item(
+                                        "规则",
+                                        view == ActiveView::Rules,
+                                        cx,
+                                        ActiveView::Rules,
+                                    ))
+                                    .child(nav_item(
+                                        "日志",
+                                        view == ActiveView::Logs,
+                                        cx,
+                                        ActiveView::Logs,
+                                    ))
+                                    .child(nav_item(
+                                        "工具箱",
+                                        view == ActiveView::Tools,
+                                        cx,
+                                        ActiveView::Tools,
+                                    ))
+                                    .child(nav_item(
+                                        "设置",
+                                        view == ActiveView::Settings,
+                                        cx,
+                                        ActiveView::Settings,
+                                    )),
                             ),
                     )
                     .child(
-                        // Right Window Controls
+                        // Sidebar Bottom Area
                         div()
-                            .flex()
-                            .gap_1()
-                            .child(window_control_button("−"))
-                            .child(window_control_button("□"))
-                            .child(window_control_button("×")),
+                            .flex_col()
+                            .p_3()
+                            .gap_2()
+                            .child(
+                                // Status Card
+                                div()
+                                    .p_3()
+                                    .rounded_lg()
+                                    .bg(rgb(0xF9FAFB))
+                                    .border_1()
+                                    .border_color(color_border)
+                                    .flex_col()
+                                    .gap_2()
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .gap_2()
+                                            .child(
+                                                div()
+                                                    .size(px(8.0))
+                                                    .bg(rgb(0x10B981))
+                                                    .rounded_full(),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_xs()
+                                                    .font_weight(FontWeight::MEDIUM)
+                                                    .child("已连接"),
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_sm()
+                                            .font_weight(FontWeight::MEDIUM)
+                                            .child(active_node_name),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_xs()
+                                            .bg(color_brand_soft)
+                                            .text_color(color_brand)
+                                            .px_2()
+                                            .py_0p5()
+                                            .rounded_sm()
+                                            .child("48ms"),
+                                    )
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .gap_2()
+                                            .text_xs()
+                                            .text_color(color_text_secondary)
+                                            .child("↓ 12.45MB/s")
+                                            .child("↑ 3.26MB/s"),
+                                    )
+                                    .child(
+                                        // Chart Placeholder
+                                        div().h(px(40.0)).w_full().bg(color_border).rounded_sm(),
+                                    ),
+                            )
+                            .child(
+                                // Bottom Action Icons
+                                div()
+                                    .flex()
+                                    .gap_3()
+                                    .child(action_icon("GH"))
+                                    .child(action_icon("🌙"))
+                                    .child(action_icon("🔔")),
+                            ),
                     ),
             )
             .child(
-                // --- 2. Body (Flex Row) ---
+                // --- 2. Main Right Side (Flex Column) ---
                 div()
                     .flex_1()
                     .flex()
-                    .flex_row()
+                    .flex_col()
+                    .bg(color_bg)
                     .child(
-                        // --- 2.1 Sidebar (220px fixed) ---
+                        // Main Header (64px)
                         div()
-                            .w(sidebar_width)
-                            .h_full()
+                            .h(header_height)
+                            .w_full()
                             .flex()
-                            .flex_col()
+                            .items_center()
                             .justify_between()
-                            .border_r_1()
+                            .px_5()
+                            .bg(color_surface)
+                            .border_b_1()
                             .border_color(color_border)
                             .child(
                                 div()
                                     .flex_col()
+                                    .child(div().text_lg().font_weight(FontWeight::SEMIBOLD).child(
+                                        match view {
+                                            ActiveView::Dashboard => "仪表盘",
+                                            ActiveView::Nodes => "节点列表",
+                                            ActiveView::Config => "配置编辑",
+                                            ActiveView::Subscriptions => "订阅管理",
+                                            ActiveView::Connections => "连接详情",
+                                            ActiveView::Rules => "规则管理",
+                                            ActiveView::Logs => "实时日志",
+                                            ActiveView::Tools => "工具箱",
+                                            ActiveView::Settings => "系统设置",
+                                            _ => "Narya",
+                                        },
+                                    ))
                                     .child(
-                                        // Sidebar Brand Area
                                         div()
-                                            .h(px(60.0))
-                                            .flex()
-                                            .items_center()
-                                            .px_5()
-                                            .gap_2()
-                                            .child(img("resources/assets/logo.png").size(px(32.0)))
-                                            .child(
-                                                div()
-                                                    .flex_col()
-                                                    .child(
-                                                        div()
-                                                            .text_base()
-                                                            .font_weight(FontWeight::BOLD)
-                                                            .child("Narya"),
-                                                    )
-                                                    .child(
-                                                        div()
-                                                            .text_xs()
-                                                            .text_color(color_text_secondary)
-                                                            .child("v1.0.0"),
-                                                    ),
-                                            ),
-                                    )
-                                    .child(
-                                        // Menu List
-                                        div()
-                                            .flex_col()
-                                            .p_2()
-                                            .gap_1()
-                                            .child(nav_item(
-                                                "仪表盘",
-                                                view == ActiveView::Dashboard,
-                                                cx,
-                                                ActiveView::Dashboard,
-                                            ))
-                                            .child(nav_item(
-                                                "节点",
-                                                view == ActiveView::Nodes,
-                                                cx,
-                                                ActiveView::Nodes,
-                                            ))
-                                            .child(nav_item(
-                                                "配置",
-                                                view == ActiveView::Config,
-                                                cx,
-                                                ActiveView::Config,
-                                            ))
-                                            .child(nav_item(
-                                                "订阅",
-                                                view == ActiveView::Subscriptions,
-                                                cx,
-                                                ActiveView::Subscriptions,
-                                            ))
-                                            .child(nav_item(
-                                                "连接",
-                                                view == ActiveView::Connections,
-                                                cx,
-                                                ActiveView::Connections,
-                                            ))
-                                            .child(nav_item(
-                                                "规则",
-                                                view == ActiveView::Rules,
-                                                cx,
-                                                ActiveView::Rules,
-                                            ))
-                                            .child(nav_item(
-                                                "日志",
-                                                view == ActiveView::Logs,
-                                                cx,
-                                                ActiveView::Logs,
-                                            ))
-                                            .child(nav_item(
-                                                "工具箱",
-                                                view == ActiveView::Tools,
-                                                cx,
-                                                ActiveView::Tools,
-                                            ))
-                                            .child(nav_item(
-                                                "设置",
-                                                view == ActiveView::Settings,
-                                                cx,
-                                                ActiveView::Settings,
-                                            )),
+                                            .text_xs()
+                                            .text_color(color_text_secondary)
+                                            .child("管理您的网络连接与订阅"),
                                     ),
                             )
                             .child(
-                                // Sidebar Bottom Area
                                 div()
-                                    .flex_col()
-                                    .p_3()
-                                    .gap_2()
-                                    .child(
-                                        // Status Card
-                                        div()
-                                            .p_3()
-                                            .rounded_lg()
-                                            .bg(rgb(0xF9FAFB))
-                                            .border_1()
-                                            .border_color(color_border)
-                                            .flex_col()
-                                            .gap_2()
-                                            .child(
-                                                div()
-                                                    .flex()
-                                                    .items_center()
-                                                    .gap_2()
-                                                    .child(
-                                                        div()
-                                                            .size(px(8.0))
-                                                            .bg(rgb(0x10B981))
-                                                            .rounded_full(),
-                                                    )
-                                                    .child(
-                                                        div()
-                                                            .text_xs()
-                                                            .font_weight(FontWeight::MEDIUM)
-                                                            .child("已连接"),
-                                                    ),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_sm()
-                                                    .font_weight(FontWeight::MEDIUM)
-                                                    .child(active_node_name),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .bg(color_brand_soft)
-                                                    .text_color(color_brand)
-                                                    .px_2()
-                                                    .py_0p5()
-                                                    .rounded_sm()
-                                                    .child("48ms"),
-                                            )
-                                            .child(
-                                                div()
-                                                    .flex()
-                                                    .gap_2()
-                                                    .text_xs()
-                                                    .text_color(color_text_secondary)
-                                                    .child("↓ 12.45MB/s")
-                                                    .child("↑ 3.26MB/s"),
-                                            )
-                                            .child(
-                                                // Chart Placeholder
-                                                div()
-                                                    .h(px(40.0))
-                                                    .w_full()
-                                                    .bg(color_border)
-                                                    .rounded_sm(),
-                                            ),
-                                    )
-                                    .child(
-                                        // Bottom Action Icons
-                                        div()
-                                            .flex()
-                                            .gap_3()
-                                            .child(action_icon("GH"))
-                                            .child(action_icon("🌙"))
-                                            .child(action_icon("🔔")),
-                                    ),
-                            ),
-                    )
-                    .child(
-                        // --- 2.2 Main Content Area ---
-                        div()
-                            .flex_1()
-                            .flex()
-                            .flex_col()
-                            .bg(color_bg)
-                            .child(
-                                // Main Header (64px)
-                                div()
-                                    .h(header_height)
-                                    .w_full()
                                     .flex()
-                                    .items_center()
-                                    .justify_between()
-                                    .px_5()
-                                    .bg(color_surface)
-                                    .border_b_1()
-                                    .border_color(color_border)
+                                    .gap_3()
+                                    .child(header_button("添加", true))
+                                    .child(header_button("刷新全部", false))
+                                    .child(header_button("导入", false))
+                                    .child(header_button("导出", false))
+                                    .child(action_icon("⚙"))
+                                    .child(action_icon("⋮")),
+                            ),
+                    )
+                    .child(
+                        // Scrollable Content
+                        div().flex_1().p_5().overflow_hidden().child(match view {
+                            ActiveView::Dashboard => render_dashboard_view().into_any_element(),
+                            ActiveView::Nodes => {
+                                render_nodes_view(&self.state, cx).into_any_element()
+                            }
+                            ActiveView::Subscriptions => {
+                                render_subscriptions_view(&self.state, cx).into_any_element()
+                            }
+                            _ => div()
+                                .child(format!("{:?} View Placeholder", view))
+                                .into_any_element(),
+                        }),
+                    )
+                    .child(
+                        // --- 3. Footer (36px) - Now on the right side ---
+                        div()
+                            .h(footer_height)
+                            .w_full()
+                            .flex()
+                            .items_center()
+                            .justify_between()
+                            .px_4()
+                            .bg(color_surface)
+                            .border_t_1()
+                            .border_color(color_border)
+                            .child(
+                                div()
+                                    .flex()
+                                    .gap_4()
+                                    .child(footer_info_item("内核", "sing-box"))
+                                    .child(footer_info_item("配置", "Narya Default"))
+                                    .child(footer_info_item("订阅", "机场 A · 128 节点")),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .gap_3()
                                     .child(
                                         div()
-                                            .flex_col()
-                                            .child(
-                                                div()
-                                                    .text_lg()
-                                                    .font_weight(FontWeight::SEMIBOLD)
-                                                    .child(match view {
-                                                        ActiveView::Dashboard => "仪表盘",
-                                                        ActiveView::Nodes => "节点列表",
-                                                        ActiveView::Config => "配置编辑",
-                                                        ActiveView::Subscriptions => "订阅管理",
-                                                        ActiveView::Connections => "连接详情",
-                                                        ActiveView::Rules => "规则管理",
-                                                        ActiveView::Logs => "实时日志",
-                                                        ActiveView::Tools => "工具箱",
-                                                        ActiveView::Settings => "系统设置",
-                                                        _ => "Narya",
-                                                    }),
-                                            )
-                                            .child(
-                                                div()
-                                                    .text_xs()
-                                                    .text_color(color_text_secondary)
-                                                    .child("管理您的网络连接与订阅"),
-                                            ),
+                                            .text_xs()
+                                            .text_color(color_brand)
+                                            .cursor_pointer()
+                                            .child("检查更新"),
                                     )
                                     .child(
                                         div()
-                                            .flex()
-                                            .gap_3()
-                                            .child(header_button("添加", true))
-                                            .child(header_button("刷新全部", false))
-                                            .child(header_button("导入", false))
-                                            .child(header_button("导出", false))
-                                            .child(action_icon("⚙"))
-                                            .child(action_icon("⋮")),
+                                            .text_xs()
+                                            .text_color(color_text_secondary)
+                                            .child("1.0.0"),
                                     ),
-                            )
-                            .child(
-                                // Scrollable Content
-                                div().flex_1().p_5().overflow_hidden().child(match view {
-                                    ActiveView::Dashboard => {
-                                        render_dashboard_view().into_any_element()
-                                    }
-                                    ActiveView::Nodes => {
-                                        render_nodes_view(&self.state, cx).into_any_element()
-                                    }
-                                    ActiveView::Subscriptions => {
-                                        render_subscriptions_view(&self.state, cx)
-                                            .into_any_element()
-                                    }
-                                    _ => div()
-                                        .child(format!("{:?} View Placeholder", view))
-                                        .into_any_element(),
-                                }),
-                            ),
-                    ),
-            )
-            .child(
-                // --- 3. Footer (36px) ---
-                div()
-                    .h(footer_height)
-                    .w_full()
-                    .flex()
-                    .items_center()
-                    .justify_between()
-                    .px_4()
-                    .bg(color_surface)
-                    .border_t_1()
-                    .border_color(color_border)
-                    .child(
-                        div()
-                            .flex()
-                            .gap_4()
-                            .child(footer_info_item("内核", "sing-box"))
-                            .child(footer_info_item("配置", "Narya Default"))
-                            .child(footer_info_item("订阅", "机场 A · 128 节点")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .gap_3()
-                            .child(
-                                div()
-                                    .text_xs()
-                                    .text_color(color_brand)
-                                    .cursor_pointer()
-                                    .child("检查更新"),
-                            )
-                            .child(
-                                div()
-                                    .text_xs()
-                                    .text_color(color_text_secondary)
-                                    .child("1.0.0"),
                             ),
                     ),
             )
@@ -461,18 +399,6 @@ fn nav_item(
                         .child(label),
                 ),
         )
-}
-
-fn window_control_button(label: &'static str) -> impl IntoElement {
-    div()
-        .size(px(32.0))
-        .flex()
-        .items_center()
-        .justify_center()
-        .rounded_md()
-        .cursor_pointer()
-        .hover(|s| s.bg(rgb(0xF3F4F6)))
-        .child(label)
 }
 
 fn action_icon(label: &'static str) -> impl IntoElement {
