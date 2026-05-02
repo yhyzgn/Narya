@@ -25,6 +25,8 @@ pub struct AppState {
     pub selected_subscription_id: Option<String>,
     pub active_subscription_tab: SubscriptionTab,
     pub subscription_filter_text: String,
+
+    pub subscription_list_state: ListState,
 }
 
 impl AppState {
@@ -332,6 +334,7 @@ impl AppState {
             selected_subscription_id: Some("sub-1".to_string()),
             active_subscription_tab: SubscriptionTab::Overview,
             subscription_filter_text: String::new(),
+            subscription_list_state: ListState::new(5, ListAlignment::Top, px(100.0)),
         }
     }
 }

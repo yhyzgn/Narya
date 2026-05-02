@@ -163,25 +163,35 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
+                                .h(px(330.0))
                                 .flex()
                                 .flex_col()
                                 .flex_1()
-                                .gap_2() // Explicit gap_2 for vertical spacing
                                 .mt_2()
-                                .px_1() // Small padding for selection rings
+                                .px_1()
                                 .overflow_hidden()
-                                .children(state.subscriptions.iter()
-                                    .filter(|s| s.name.to_lowercase().contains(&state.subscription_filter_text.to_lowercase()))
-                                    .map(|sub| {
-                                        let is_selected = Some(sub.id.clone()) == selected_sub_id;
-                                        let model = model.clone();
-                                        let sub_id = sub.id.clone();
-                                        subscription_card(sub, is_selected, move |_, _, cx| {
-                                            model.update(cx, |state, cx| {
-                                                state.select_subscription(sub_id.clone(), cx);
-                                            });
-                                        })
-                                    }))
+                                .child({
+                                    let model = model.clone();
+                                    list(state.subscription_list_state.clone(), move |index, _, cx| {
+                                        let state = model.read(cx);
+                                        if let Some(sub) = state.subscriptions.get(index) {
+                                            let sub = sub.clone();
+                                            let is_selected = state.selected_subscription_id.as_ref() == Some(&sub.id);
+                                            let sub_id = sub.id.clone();
+                                            let model = model.clone();
+                                            
+                                            return div()
+                                                .pb_2()
+                                                .child(subscription_card(&sub, is_selected, move |_, _, cx| {
+                                                    model.update(cx, |state, cx| {
+                                                        state.selected_subscription_id = Some(sub_id.clone());
+                                                        cx.notify();
+                                                    });
+                                                })).into_any_element();
+                                        }
+                                        div().into_any_element()
+                                    }).flex_1()
+                                })
                         )
                 )
                 .child(
@@ -547,7 +557,7 @@ fn metric_card(
         )
 }
 
-fn subscription_card(
+pub fn subscription_card(
     sub: &NaryaSubscription, 
     active: bool,
     on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
@@ -566,7 +576,6 @@ fn subscription_card(
         .rounded_xl()
         .p_2()
         .flex()
-        .gap_4()
         .cursor_pointer()
         .on_mouse_down(MouseButton::Left, on_click)
         .child(

@@ -14,6 +14,8 @@ pub struct AppShell {
 impl AppShell {
     pub fn open(cx: &mut App) {
         let state = cx.new(|_| AppState::mock_data());
+        AppState::start_traffic_monitor(state.clone(), cx);
+
         // Default and Min size: 1536 x 980
         let size = size(px(1536.0), px(980.0));
         let bounds = Bounds::centered(None, size, cx);
@@ -21,8 +23,6 @@ impl AppShell {
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 window_min_size: Some(size),
-                // WindowOptions kind might have min_size depending on GPUI version, 
-                // but usually it's handled via bounds or window_min_size.
                 ..Default::default()
             },
             move |_, cx| {
