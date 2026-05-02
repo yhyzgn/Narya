@@ -1,3 +1,4 @@
+mod config_gen;
 mod kernel;
 mod proxy;
 

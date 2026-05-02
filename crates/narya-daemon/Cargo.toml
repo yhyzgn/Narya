@@ -8,3 +8,4 @@ tokio = { version = "1.0", features = ["full"] }
 serde_json = "1.0"
 anyhow = "1.0"
 narya-ipc = { path = "../narya-ipc" }
+narya-core = { path = "../narya-core" }
