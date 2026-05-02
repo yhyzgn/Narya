@@ -24,22 +24,22 @@
 ### 下一步
 - Phase 2: 在 GPUI 中重建 Splash 与 Dashboard 页面。
 
-## 2026-05-02 — Backend IPC Integration & Crate Decoupling
+## 2026-05-02 — Kernel Orchestration & Config Persistence
 
 ### 已完成
-- **建立 IPC 通信层**：在 `narya-ipc` 中定义了标准 JSON-RPC 2.0 协议，包含异步 Request/Response 和 Notification 机制。
-- **后台 Daemon 服务**：实现了 `narya-daemon` 独立服务，基于 `tokio` 监听 Unix Domain Socket (`/tmp/narya.sock`)。
-- **UI 端集成**：在 `narya-app` 中开发了 `IpcClient` 模块，并将其无缝接入 `AppState` 的实时更新循环中。
-- **架构冲突修复**：解决了 `narya_core` 与 `gpui` (如 `Subscription`) 的命名冲突，通过全限定路径引用确保了类型安全性。
-- **递归限制优化**：在 `narya-app` crate root 增加了 `recursion_limit`，解决了 GPUI 复杂宏展开导致的栈溢出问题。
+- **内核生命周期管理**：在 `narya-daemon` 中实现了 `KernelManager`，支持通过 `tokio::process` 异步启动、监控并销毁 `sing-box` 内核进程。
+- **系统代理自动切换**：实现了 `SystemProxy` 抽象层及 Linux `gsettings` 后端，能够真实修改操作系统的代理设置。
+- **配置持久化体系**：在 `narya-config` 中实现了基于 YAML 的 Profile 读写功能，并为 `narya-core` 的领域模型补全了 `serde` 序列化链。
+- **后端指令集扩展**：在 `main.rs` 中路由了 `StartKernel`、`StopKernel` 和 `SetSystemProxy` 等核心业务指令。
 
 ### 修改文件
-- `crates/narya-ipc/*` (新 crate)
-- `crates/narya-daemon/*` (新 crate)
-- `crates/narya-app/src/ipc.rs` (新模块)
-- `crates/narya-app/src/state.rs` (集成逻辑)
+- `crates/narya-daemon/src/kernel.rs` (新模块)
+- `crates/narya-daemon/src/proxy.rs` (新模块)
+- `crates/narya-config/src/lib.rs` (重构)
+- `crates/narya-core/src/lib.rs` (派生 Trait)
 
 ### 下一步
-- Phase 7: 实现真实的 sing-box 内核编排、系统代理原子切换及配置持久化。
+- Phase 8: 实现 UI 与后端 Daemon 的全功能闭环，替换所有前端 Mock 数据为真实后端流。
+
 
 

@@ -6,8 +6,8 @@
 
 ## 当前阶段
 
-Phase 7: 真实内核集成与配置持久化 (GPUI)。
-项目已成功实现**后端通信骨架 (IPC)**，建立了 `narya-daemon` (UDS Server) 与 `narya-app` (Client) 之间的双向通信链路。目前 UI 已能够尝试与后端建立连接并预留了真实数据推送接口。下一步将开始在 Daemon 中集成真实的 `sing-box` 运行逻辑及跨平台系统代理控制。
+Phase 8: UI/后端逻辑闭环与全功能联调 (GPUI)。
+项目已成功实现**内核编排与系统控制**，完成了 `narya-daemon` 的核心功能引擎：包含 `sing-box` 进程管理、跨平台系统代理设置及 YAML 配置持久化。目前后端已具备执行真实业务指令的能力。下一步将开始在 UI 中集成这些真实的后端调用，替换现有的 Mock 逻辑，实现真正的代理开关与实时内核监控。
 
 ## 当前仓库内容
 
@@ -17,9 +17,10 @@ src/
   main.rs          # 最小化入口
 crates/
   narya-app/       # UI (含 IPC Client, 状态同步)
-  narya-daemon/    # 后端服务 (含 UDS Listener, 系统控制预留)
-  narya-ipc/       # 共享协议 (Request/Response/Notification 定义)
-  narya-core/      # 核心领域模型
+  narya-daemon/    # 后端服务 (内核编排、系统代理、UDS Server)
+  narya-ipc/       # 共享协议
+  narya-config/    # 配置持久化 (YAML)
+  narya-core/      # 核心领域模型 (支持 Serde)
   ...
 resources/         # 静态资源
 ui/                # UI 视觉真源
@@ -29,18 +30,19 @@ ui/                # UI 视觉真源
 
 ## 已完成
 
-- **IPC 通信体系**：
-    - **narya-ipc**：定义了基于 JSON-RPC 2.0 的请求、响应及通知模型。
-    - **narya-daemon**：实现了基于 Tokio 的 Unix Domain Socket 监听器，支持多客户端并发连接。
-    - **narya-app**：在 `AppState` 中集成了 `IpcClient`，实现了启动自动重连及数据流占位。
-- **高保真 UI 与逻辑**：完成了 Nodes 详情、实时网速模拟（预留 IPC 接入点）、一键测速等功能。
-- **工程化架构**：全工作区模块化拆分完成，通过 `cargo clippy` 严格验证。
+- **核心功能引擎**：
+    - **KernelManager**：实现了基于 `tokio::process` 的 `sing-box` 进程启动与销毁逻辑。
+    - **SystemProxy**：实现了 Linux 环境下的 `gsettings` 代理自动切换逻辑。
+    - **narya-config**：实现了 Profile 配置的 YAML 序列化与持久化读写。
+- **IPC 指令集扩展**：Daemon 现已支持 `SetSystemProxy`、`StartKernel`、`StopKernel` 等核心 RPC 指令。
+- **全量模型序列化**：为 `narya-core` 中的所有领域模型增加了 `Serialize/Deserialize` 支持。
+- **验证通过**：全工作区 `cargo check` 绿色。
 
 ## 尚未完成
 
-- 在 Daemon 中实现具体的 `sing-box` 进程管理。
-- 编写跨平台系统代理切换脚本 (macOS `networksetup` / Linux `nmcli`)。
-- 实现 Profiles (yaml) 的持久化读写与多方案切换。
+- 在 UI `AppState` 中调用真实的 IPC 指令替换 Mock。
+- 实现真正的配置文件合并生成逻辑（将订阅节点转为 sing-box json）。
+- 完善日志实时推送 (GetKernelLogs)。
 
 ## 阻塞/风险
 
@@ -48,4 +50,4 @@ ui/                # UI 视觉真源
 
 ## 下一个建议任务
 
-执行 `.prompt/008-phase-7-kernel-orchestration.md`：实现真实的 sing-box 内核生命周期管理与 IPC 状态实时回显。
+执行 `.prompt/009-phase-8-real-integration.md`：实现 UI 与 Daemon 的全流程闭环联调。

@@ -57,9 +57,17 @@
 - [x] 解决 `narya-core` 与 `gpui` 的命名空间冲突问题
 
 ## Phase 7：内核编排与系统控制
+状态：已完成 ✅
+
+- [x] 实现 `narya-daemon` 对 `sing-box` 进程的生命周期管理 (spawn/kill)
+- [x] 编写 Linux (`gsettings`) 系统代理原子切换逻辑
+- [x] 在 `narya-config` 中实现 YAML 配置的持久化存储
+- [x] 为核心模型增加 `serde` 序列化支持以支持持久化
+
+## Phase 8：UI/后端逻辑闭环 (Real Integration)
 状态：进行中 🏗️
 
-- [ ] 实现 `narya-daemon` 对 `sing-box` 二进制文件的进程生命周期管理
-- [ ] 编写跨平台（Linux/macOS）系统代理切换原子逻辑
-- [ ] 建立基于 `narya-config` 的 YAML 配置持久化层
-- [ ] 实现从 Daemon 到 App 的实时流量数据流推送
+- [ ] 在 `AppState` 中集成真实的 `IpcClient` 调用，替换测速与连接的 Mock 逻辑
+- [ ] 实现 Dashboard 页面的一键连接开关，并触发后端代理切换
+- [ ] 对接 Daemon 推送的实时流量数据，并在侧边栏 Footer 真实回显
+- [ ] 实现基础订阅链接的本地持久化与加载

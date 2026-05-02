@@ -1,4 +1,5 @@
 use narya_core;
+use narya_ipc::IpcNotification;
 use gpui::*;
 use std::time::Duration;
 use crate::ipc::IpcClient;
@@ -7,28 +8,61 @@ pub struct AppState {
     pub nodes: Vec<narya_core::Node>,
     pub subscriptions: Vec<narya_core::Subscription>,
     pub active_node_id: Option<String>,
+    pub kernel_running: bool,
 }
 
 impl AppState {
+    pub fn handle_notification(&mut self, notif: IpcNotification, cx: &mut Context<Self>) {
+        match notif {
+            IpcNotification::TrafficUpdate { down, up } => {
+                if let Some(active_id) = &self.active_node_id {
+                    if let Some(node) = self.nodes.iter_mut().find(|n| n.id == *active_id) {
+                        node.download_speed = down;
+                        node.upload_speed = up;
+                    }
+                }
+            }
+            IpcNotification::StatusUpdate { running } => {
+                self.kernel_running = running;
+            }
+        }
+        cx.notify();
+    }
+
     pub fn start_traffic_monitor(model: Entity<Self>, cx: &mut App) {
         cx.spawn(move |cx: &mut AsyncApp| {
             let mut cx_inner = cx.clone();
             async move {
-                // Try to connect to daemon
-                let mut _client = IpcClient::connect("/tmp/narya.sock").await.ok();
-                
                 loop {
-                    cx_inner.background_executor().timer(Duration::from_secs(1)).await;
-                    let _ = model.update(&mut cx_inner, |state, cx| {
-                        if let Some(active_id) = &state.active_node_id {
-                            if let Some(node) = state.nodes.iter_mut().find(|n| n.id == *active_id) {
-                                // For now, still simulate, but we could use _client here
-                                node.download_speed = (node.download_speed + (rand::random::<f32>() - 0.5) * 2.0).max(0.0);
-                                node.upload_speed = (node.upload_speed + (rand::random::<f32>() - 0.5) * 1.0).max(0.0);
+                    // Try to connect to daemon
+                    if let Ok(mut client) = IpcClient::connect("/tmp/narya.sock").await {
+                        println!("Connected to daemon IPC");
+                        loop {
+                            match client.next_notification().await {
+                                Ok(notif) => {
+                                    let _ = model.update(&mut cx_inner, |state, cx| {
+                                        state.handle_notification(notif, cx);
+                                    });
+                                }
+                                Err(e) => {
+                                    eprintln!("IPC notification loop error: {}", e);
+                                    break;
+                                }
                             }
                         }
-                        cx.notify();
-                    });
+                    } else {
+                        // Fallback to simulation if daemon is offline
+                        cx_inner.background_executor().timer(Duration::from_secs(1)).await;
+                        let _ = model.update(&mut cx_inner, |state, cx| {
+                            if let Some(active_id) = &state.active_node_id {
+                                if let Some(node) = state.nodes.iter_mut().find(|n| n.id == *active_id) {
+                                    node.download_speed = (node.download_speed + (rand::random::<f32>() - 0.5) * 2.0).max(0.0);
+                                    node.upload_speed = (node.upload_speed + (rand::random::<f32>() - 0.5) * 1.0).max(0.0);
+                                }
+                            }
+                            cx.notify();
+                        });
+                    }
                 }
             }
         }).detach();
@@ -200,6 +234,7 @@ impl AppState {
             active_node_id: Some("hk-01".to_string()),
             nodes,
             subscriptions,
+            kernel_running: false,
         }
     }
 }
