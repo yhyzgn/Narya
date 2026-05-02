@@ -10,9 +10,14 @@ use theme::Theme;
 enum ActiveView {
     Dashboard,
     Nodes,
-    Subscriptions,
+    Connections,
     Rules,
+    Subscriptions,
+    Config,
+    Logs,
+    Tools,
     Settings,
+    About,
 }
 
 struct Splash {
@@ -27,13 +32,14 @@ impl Splash {
     }
 
     fn simulate_loading(&mut self, cx: &mut Context<Self>) {
-        cx.spawn(|this: WeakEntity<Self>, cx: &mut AsyncApp| {
+        let entity_id = cx.entity_id();
+        cx.spawn(move |this: WeakEntity<Self>, cx: &mut AsyncApp| {
             let mut cx_clone = cx.clone();
             async move {
                 for i in 0..=100 {
                     cx_clone
                         .background_executor()
-                        .timer(Duration::from_millis(30))
+                        .timer(Duration::from_millis(20))
                         .await;
                     let _ = this.update(&mut cx_clone, |this, cx| {
                         this.progress = i as f32 / 100.0;
@@ -44,24 +50,14 @@ impl Splash {
                 // Wait a bit before switching
                 cx_clone
                     .background_executor()
-                    .timer(Duration::from_millis(500))
+                    .timer(Duration::from_millis(300))
                     .await;
 
                 cx_clone.update(|cx| {
-                    let bounds = Bounds::centered(None, size(px(1536.0), px(1024.0)), cx);
-                    cx.open_window(
-                        WindowOptions {
-                            window_bounds: Some(WindowBounds::Windowed(bounds)),
-                            ..Default::default()
-                        },
-                        |_, cx| {
-                            cx.new(|cx| AppShell {
-                                active_view: ActiveView::Dashboard,
-                                handle: cx.entity().downgrade(),
-                            })
-                        },
-                    )
-                    .expect("failed to open main window");
+                    open_main_window(cx);
+                    let _ = cx.with_window(entity_id, |window, _| {
+                        window.remove_window();
+                    });
                 });
             }
         })
@@ -81,7 +77,7 @@ impl Render for Splash {
             .justify_center()
             .bg(theme.bg)
             .child(
-                // Logo placeholder
+                // Logo placeholder - targeting ui/icons/narya-logo-transparent-1080.png style
                 div()
                     .size(px(120.0))
                     .bg(theme.primary_light)
@@ -185,6 +181,7 @@ impl Render for AppShell {
                         div()
                             .flex_1()
                             .px_3()
+                            .overflow_hidden()
                             .child(nav_item("Dashboard", view == ActiveView::Dashboard, {
                                 let handle = handle.clone();
                                 move |_, _, cx| {
@@ -203,11 +200,11 @@ impl Render for AppShell {
                                     });
                                 }
                             }))
-                            .child(nav_item("Subscriptions", view == ActiveView::Subscriptions, {
+                            .child(nav_item("Connections", view == ActiveView::Connections, {
                                 let handle = handle.clone();
                                 move |_, _, cx| {
                                     let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Subscriptions;
+                                        this.active_view = ActiveView::Connections;
                                         cx.notify();
                                     });
                                 }
@@ -221,11 +218,56 @@ impl Render for AppShell {
                                     });
                                 }
                             }))
+                            .child(nav_item("Subscriptions", view == ActiveView::Subscriptions, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Subscriptions;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Config", view == ActiveView::Config, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Config;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Logs", view == ActiveView::Logs, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Logs;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Tools", view == ActiveView::Tools, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Tools;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
                             .child(nav_item("Settings", view == ActiveView::Settings, {
                                 let handle = handle.clone();
                                 move |_, _, cx| {
                                     let _ = handle.update(cx, |this, cx| {
                                         this.active_view = ActiveView::Settings;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("About", view == ActiveView::About, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::About;
                                         cx.notify();
                                     });
                                 }
@@ -270,9 +312,14 @@ impl Render for AppShell {
                                     .child(match view {
                                         ActiveView::Dashboard => "Dashboard",
                                         ActiveView::Nodes => "Nodes",
-                                        ActiveView::Subscriptions => "Subscriptions",
+                                        ActiveView::Connections => "Connections",
                                         ActiveView::Rules => "Rules",
+                                        ActiveView::Subscriptions => "Subscriptions",
+                                        ActiveView::Config => "Config",
+                                        ActiveView::Logs => "Logs",
+                                        ActiveView::Tools => "Tools",
                                         ActiveView::Settings => "Settings",
+                                        ActiveView::About => "About",
                                     }),
                             )
                             .child(
@@ -685,12 +732,36 @@ fn node_item(name: &'static str, latency: &'static str, selected: bool) -> impl 
         .child(div().text_xs().text_color(theme.text_muted).child(latency))
 }
 
+fn open_main_window(cx: &mut App) {
+    let bounds = Bounds::centered(None, size(px(1536.0), px(1024.0)), cx);
+    cx.open_window(
+        WindowOptions {
+            window_bounds: Some(WindowBounds::Windowed(bounds)),
+            ..Default::default()
+        },
+        |_, cx| {
+            cx.new(|cx| AppShell {
+                active_view: ActiveView::Dashboard,
+                handle: cx.entity().downgrade(),
+            })
+        },
+    )
+    .expect("failed to open main window");
+}
+
 fn main() {
     gpui_platform::application().run(|cx: &mut App| {
         let bounds = Bounds::centered(None, size(px(600.0), px(400.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
+                titlebar: Some(TitlebarOptions {
+                    title: None,
+                    appears_transparent: true,
+                    ..Default::default()
+                }),
+                window_background: WindowBackgroundAppearance::Transparent,
+                kind: WindowKind::PopUp,
                 ..Default::default()
             },
             |_, cx| cx.new(Splash::new),
