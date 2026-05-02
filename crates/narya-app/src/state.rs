@@ -1,4 +1,6 @@
+use gpui::*;
 use narya_core::{Node, NodeDetails, Subscription};
+use std::time::Duration;
 
 pub struct AppState {
     pub nodes: Vec<Node>,
@@ -7,6 +9,47 @@ pub struct AppState {
 }
 
 impl AppState {
+    pub fn test_all_latency(model: Entity<Self>, cx: &mut App) {
+        // Collect IDs first to avoid borrow checker issues with model.read(cx) and model.update(cx)
+        let ids: Vec<String> = model.read(cx).nodes.iter().map(|n| n.id.clone()).collect();
+        let weak_model = model.downgrade();
+
+        for id in ids {
+            let weak_model = weak_model.clone();
+
+            // Clear current latency to show loading state
+            model.update(cx, |state, cx| {
+                if let Some(node) = state.nodes.iter_mut().find(|n| n.id == id) {
+                    node.latency = None;
+                }
+                cx.notify();
+            });
+
+            cx.spawn(move |cx: &mut AsyncApp| {
+                let mut cx = cx.clone();
+                let id = id.clone();
+                async move {
+                    // Simulate network delay
+                    let delay = 500 + rand::random::<u64>() % 2000;
+                    cx.background_executor()
+                        .timer(Duration::from_millis(delay))
+                        .await;
+                    let new_latency = Some(20 + rand::random::<u32>() % 200);
+
+                    weak_model
+                        .update(&mut cx, |state, cx| {
+                            if let Some(node) = state.nodes.iter_mut().find(|n| n.id == id) {
+                                node.latency = new_latency;
+                            }
+                            cx.notify();
+                        })
+                        .ok();
+                }
+            })
+            .detach();
+        }
+    }
+
     pub fn mock_data() -> Self {
         let nodes = vec![
             Node {

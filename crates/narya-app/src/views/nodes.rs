@@ -9,6 +9,8 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
     let theme = Theme::default();
     let state = model.read(cx);
 
+    let color_brand = rgb(0x3B82F6);
+
     div()
         .flex_col()
         .size_full()
@@ -23,7 +25,18 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                 .child(
                     div()
                         .flex()
-                        .gap_2()
+                        .gap_3()
+                        .child(
+                            div()
+                                .cursor_pointer()
+                                .on_mouse_down(MouseButton::Left, {
+                                    let model = model.clone();
+                                    move |_, _, cx| {
+                                        AppState::test_all_latency(model.clone(), cx);
+                                    }
+                                })
+                                .child(badge("一键测速", color_brand)),
+                        )
                         .child(badge("All Protocols", theme.primary_light))
                         .child(badge("Fastest", theme.success)),
                 ),

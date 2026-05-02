@@ -1,3 +1,4 @@
+#![recursion_limit = "512"]
 pub mod assets;
 pub mod components;
 pub mod state;
