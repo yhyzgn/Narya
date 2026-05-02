@@ -30,6 +30,7 @@
 - [x] 实现 Subscriptions 订阅管理（添加、更新、流量统计）
 - [x] 实现基础业务组件库 (Dropdown, Input, Table skeleton) -> Badge & SearchInput
 - [x] 建立视图路由机制，在 Dashboard 侧边栏点击后切换主区域视图
+- [x] **工程化重构**：将 UI 逻辑迁移至 `crates/narya-app`，实现 Workspace 模式
 
 ## Phase 4：核心逻辑集成
 状态：进行中 🏗️

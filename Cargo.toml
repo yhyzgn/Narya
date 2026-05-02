@@ -39,5 +39,6 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 anyhow.workspace = true
+narya-app = { path = "crates/narya-app" }
 narya-core = { path = "crates/narya-core" }
 narya-config = { path = "crates/narya-config" }

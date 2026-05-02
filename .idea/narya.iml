@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="EMPTY_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-config/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-core/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-daemon/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-ipc/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-kernel/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-log/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-platform/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-rules/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-subscription/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/narya-traffic/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

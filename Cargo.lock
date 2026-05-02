@@ -3295,6 +3295,23 @@ dependencies = [
  "anyhow",
  "gpui",
  "gpui_platform",
+ "narya-app",
+ "narya-config",
+ "narya-core",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "narya-app"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gpui",
+ "gpui_platform",
  "narya-config",
  "narya-core",
  "serde",
