@@ -19,9 +19,9 @@ pub enum IconName {
     Terminal,
 }
 
-pub fn icon(name: IconName, size: f32, color: Hsla) -> impl IntoElement {
+pub fn icon(_name: IconName, size: f32, color: Hsla) -> impl IntoElement {
     // High-fidelity placeholder: stylized rounded box
-    // In real GPUI app with assets: svg().path(name.path())
+    // In real GPUI app with assets: svg().path(_name.path())
     div()
         .size(px(size))
         .flex()
@@ -45,14 +45,21 @@ pub fn glass_card() -> Div {
 }
 
 pub fn badge(text: impl Into<String>, color: Hsla) -> impl IntoElement {
+    let mut bg = color;
+    bg.a = 0.1;
+
     div()
-        .bg(color)
-        .text_color(rgb(0xffffff))
-        .text_xs()
+        .bg(bg)
         .px_2()
         .py_0p5()
         .rounded_md()
-        .child(text.into())
+        .child(
+            div()
+                .text_color(color)
+                .text_size(px(11.0))
+                .font_weight(FontWeight::BOLD)
+                .child(text.into())
+        )
 }
 
 pub fn search_input() -> impl IntoElement {
