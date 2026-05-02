@@ -411,7 +411,7 @@ fn nav_item(
                 .child(
                     icon(
                         icon_name,
-                        18.0,
+                        22.0, // Increased icon size for better coordination
                         if active { rgb(0x3B82F6).into() } else { rgb(0x6B7280).into() },
                     )
                 )
@@ -438,7 +438,7 @@ fn action_icon(icon_name: IconName) -> impl IntoElement {
         .rounded_md()
         .cursor_pointer()
         .hover(|s| s.bg(rgb(0xF3F4F6)))
-        .child(icon(icon_name, 18.0, rgb(0x6B7280).into()))
+        .child(icon(icon_name, 20.0, rgb(0x6B7280).into()))
 }
 
 fn header_button(label: &'static str, primary: bool) -> impl IntoElement {
