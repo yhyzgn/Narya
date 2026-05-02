@@ -1,89 +1,74 @@
-use crate::theme::Theme;
 use gpui::{prelude::*, *};
 
-pub fn glass_card() -> Div {
-    let theme = Theme::default();
+pub enum ToastKind {
+    Info,
+    Success,
+    Warning,
+    Error,
+}
 
+pub fn glass_card() -> Div {
     div()
-        .bg(theme.surface)
+        .bg(rgb(0xFFFFFF))
         .border_1()
-        .border_color(theme.border)
-        .rounded_xl() // 12px based on spec
-        .p_6() // 24px padding
+        .border_color(rgb(0xE5E7EB))
+        .rounded_xl()
         .shadow_sm()
 }
 
-#[allow(dead_code)]
-pub fn button(label: impl IntoElement) -> Div {
-    let theme = Theme::default();
-
-    div()
-        .bg(theme.primary)
-        .text_color(rgb(0xffffff))
-        .rounded_lg()
-        .px_4()
-        .py_2()
-        .flex()
-        .items_center()
-        .justify_center()
-        .cursor_pointer()
-        .child(label)
-}
-
-#[allow(dead_code)]
-pub fn switch(active: bool) -> Div {
-    let theme = Theme::default();
-
-    div()
-        .w(px(52.0))
-        .h(px(29.0))
-        .rounded_full()
-        .bg(if active {
-            theme.success
-        } else {
-            theme.text_muted
-        })
-        .p(px(3.0))
-        .flex()
-        .child(
-            div()
-                .size(px(23.0))
-                .rounded_full()
-                .bg(rgb(0xffffff))
-                .shadow_sm()
-                .ml(if active { px(23.0) } else { px(0.0) }),
-        )
-}
-
-#[allow(dead_code)]
-pub fn badge(label: impl IntoElement, color: Rgba) -> Div {
+pub fn badge(text: impl Into<String>, color: Hsla) -> impl IntoElement {
     div()
         .bg(color)
         .text_color(rgb(0xffffff))
-        .rounded_md()
+        .text_xs()
         .px_2()
         .py_0p5()
-        .text_xs()
-        .child(label)
+        .rounded_md()
+        .child(text.into())
 }
 
-#[allow(dead_code)]
-pub fn search_input() -> Div {
-    let theme = Theme::default();
+pub fn search_input() -> impl IntoElement {
     div()
+        .w(px(320.0))
+        .h(px(36.0))
+        .bg(rgb(0xffffff))
+        .border_1()
+        .border_color(rgb(0xe5e7eb))
+        .rounded_md()
         .flex()
         .items_center()
-        .w(px(641.0)) // Based on spec
-        .h(px(40.0))
-        .border_1()
-        .border_color(theme.border)
-        .rounded_lg()
-        .bg(theme.surface)
         .px_3()
+        .gap_2()
+        .child("🔍")
         .child(
             div()
                 .text_sm()
-                .text_color(theme.text_muted)
-                .child("Search nodes..."),
+                .text_color(rgb(0x9ca3af))
+                .child("搜索节点..."),
+        )
+}
+
+pub fn toast(message: impl Into<String>, _kind: ToastKind) -> impl IntoElement {
+    div()
+        .absolute()
+        .bottom_10()
+        .right_10()
+        .child(
+            glass_card()
+                .p_4()
+                .shadow_lg()
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap_3()
+                        .child("🔔")
+                        .child(
+                            div()
+                                .text_sm()
+                                .font_weight(FontWeight::MEDIUM)
+                                .child(message.into()),
+                        ),
+                ),
         )
 }

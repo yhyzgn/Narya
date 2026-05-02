@@ -59,10 +59,10 @@ pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -
                                         AppState::test_all_latency(model.clone(), cx);
                                     }
                                 })
-                                .child(badge("一键测速", color_brand)),
+                                .child(badge("一键测速", color_brand.into())),
                         )
-                        .child(badge("All Protocols", theme.primary_light))
-                        .child(badge("Fastest", theme.success)),
+                        .child(badge("All Protocols", theme.primary_light.into()))
+                        .child(badge("Fastest", theme.success.into())),
                 ),
         )
         .child(
@@ -157,6 +157,12 @@ pub fn node_card(
         .map(|l| format!("{}ms", l))
         .unwrap_or_else(|| "--".to_string());
 
+    let status_color: Hsla = if selected {
+        theme.success.into()
+    } else {
+        theme.text_muted.into()
+    };
+
     glass_card()
         .p_4()
         .cursor_pointer()
@@ -174,11 +180,7 @@ pub fn node_card(
                         .child(
                             div()
                                 .size(px(10.0))
-                                .bg(if selected {
-                                    theme.success
-                                } else {
-                                    theme.text_muted
-                                })
+                                .bg(status_color)
                                 .rounded_full(),
                         )
                         .child(
@@ -201,11 +203,7 @@ pub fn node_card(
                         .gap_4()
                         .child(badge(
                             latency_str,
-                            if selected {
-                                theme.success
-                            } else {
-                                theme.text_muted
-                            },
+                            status_color,
                         ))
                         .child(
                             div()

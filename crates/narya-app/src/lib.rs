@@ -14,6 +14,10 @@ pub fn run() {
     gpui_platform::application()
         .with_assets(Assets)
         .run(|cx: &mut App| {
+            // Initialize System Tray (Skeleton)
+            #[cfg(not(target_os = "linux"))] // Tray icon can be tricky on Linux in some environments
+            let _tray = init_tray();
+
             let bounds = Bounds::centered(None, size(px(600.0), px(400.0)), cx);
             cx.open_window(
                 WindowOptions {
@@ -32,4 +36,15 @@ pub fn run() {
             .expect("failed to open splash window");
             cx.activate(true);
         });
+}
+
+#[cfg(not(target_os = "linux"))]
+fn init_tray() -> Option<tray_icon::TrayIcon> {
+    use tray_icon::{menu::Menu, TrayIconBuilder};
+    let menu = Menu::new();
+    TrayIconBuilder::new()
+        .with_menu(Box::new(menu))
+        .with_tooltip("Narya")
+        .build()
+        .ok()
 }

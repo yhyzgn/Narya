@@ -41,7 +41,7 @@ pub fn subscription_card(sub: &NaryaSubscription) -> impl IntoElement {
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(title),
                     )
-                    .child(badge(status, theme.success)),
+                    .child(badge(status, theme.success.into())),
             )
             .child(
                 div()
