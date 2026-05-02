@@ -24,21 +24,24 @@
 ### 下一步
 - Phase 2: 在 GPUI 中重建 Splash 与 Dashboard 页面。
 
-## 2026-05-02 — UI/Backend Convergence & Real Integration
+## 2026-05-02 — Subscription Parser & Multi-Platform Support
 
 ### 已完成
-- **持久化 IPC 通讯**：在 `AppState` 中集成了基于 `AsyncApp` 的异步消息循环，支持实时监听后端推送的 `IpcNotification`。
-- **真实业务闭环**：Dashboard 的一键连接功能已完全对接后端 `SetSystemProxy` 接口，实现了从 UI 触发真实系统代理变更。
-- **状态动态回显**：UI 的连接状态、网速、内核状态现在均优先由后端 IPC 数据驱动，并具备自动重连机制。
-- **全量联调通过**：完成了从“点击按钮 -> 后端执行 -> 状态推送回前端”的完整测试流程。
+- **订阅解析模块 (narya-subscription)**：新建了订阅解析 crate，实现了对 Clash YAML 格式的深度解析，可将远程配置自动转换为标准的领域模型。
+- **macOS 系统级适配**：在 Daemon 中集成了 macOS `networksetup` 后端，支持在苹果系统下真实控制系统代理开关。
+- **高级过滤与搜索**：在 `AppState` 和 `Nodes` 视图中实现了毫秒级的搜索过滤引擎，支持按节点名称实时筛选。
+- **代码健壮性重构**：通过 Enum Dispatch 解决了 async trait 的 dyn-compatibility 限制，并规范了所有异步闭包的 `WeakEntity` 捕获模式。
+- **唯一标识体系**：引入了 `uuid` crate 为解析生成的节点提供全局唯一 ID，确保状态同步的准确性。
 
 ### 修改文件
-- `crates/narya-app/src/state.rs` (核心集成)
-- `crates/narya-app/src/ipc.rs` (通知循环)
-- `crates/narya-app/src/views/dashboard.rs` (交互集成)
+- `crates/narya-subscription/*` (新 crate)
+- `crates/narya-daemon/src/proxy.rs` (平台适配)
+- `crates/narya-app/src/state.rs` (过滤逻辑)
+- `Cargo.toml` (工作区依赖)
 
 ### 下一步
-- Phase 9: 实现真实的订阅解析引擎、远程节点加载与 Profiles 持久化编辑器。
+- Phase 10: 实现真实网络下载订阅、多平台托盘支持及 sing-box 生产级配置生成。
+
 
 
 

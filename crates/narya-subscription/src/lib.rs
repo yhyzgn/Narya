@@ -1,6 +1,7 @@
 use narya_core::{Node, NodeDetails};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ClashConfig {
@@ -23,6 +24,17 @@ struct ClashProxy {
     tls: bool,
 }
 
+pub async fn fetch_remote_subscription(url: &str) -> Result<String> {
+    let client = reqwest::Client::builder()
+        .user_agent("Clash/1.0 Narya/1.0")
+        .timeout(Duration::from_secs(10))
+        .build()?;
+        
+    let response = client.get(url).send().await?;
+    let content = response.text().await?;
+    Ok(content)
+}
+
 pub fn parse_clash_yaml(content: &str) -> Result<Vec<Node>> {
     let config: ClashConfig = serde_yaml::from_str(content)?;
     let mut nodes = Vec::new();
@@ -42,7 +54,7 @@ pub fn parse_clash_yaml(content: &str) -> Result<Vec<Node>> {
             nodes.push(Node {
                 id: uuid::Uuid::new_v4().to_string(),
                 name: p.name,
-                country_code: "UN".to_string(), // Unknown for now
+                country_code: "UN".to_string(),
                 protocol: p.proxy_type,
                 tag: None,
                 latency: None,

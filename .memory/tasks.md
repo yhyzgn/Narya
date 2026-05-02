@@ -73,9 +73,17 @@
 - [x] 实现 UI 端的自动断线重连逻辑
 
 ## Phase 9：业务深度集成 (Business Polish)
+状态：已完成 ✅
+
+- [x] 实现 `narya-subscription` 的 Clash YAML 解析引擎
+- [x] 在 `narya-daemon` 中增加 macOS (`networksetup`) 支付后端
+- [x] 实现 Nodes 页面的实时搜索过滤逻辑
+- [x] 优化异步闭包与 dyn 兼容性代码结构
+
+## Phase 10：生产级调优与正式发布
 状态：进行中 🏗️
 
-- [ ] 实现订阅 URL 解析引擎，支持从远程拉取节点并同步至 `AppState`
-- [ ] 完善 `narya-daemon` 的真实测速模块（调用 `sing-box` API 或系统测试）
-- [ ] 实现侧边栏 footer 真实反映后端内核版本与运行状态
-- [ ] 开发 Profiles 编辑器的基础功能，支持持久化保存规则
+- [ ] 实现 `reqwest` 集成，支持真实订阅 URL 的网络下载与重试
+- [ ] 开发 `narya-daemon` 的真实测速模块，通过 UDS 将延迟数据推送到 UI
+- [ ] 为应用增加托盘图标 (System Tray) 支持
+- [ ] 完善配置文件合并逻辑，生成 sing-box 生产级 JSON 配置
