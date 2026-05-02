@@ -27,7 +27,7 @@ impl AppShell {
             },
             move |_, cx| {
                 cx.new(|_| AppShell {
-                    active_view: ActiveView::Dashboard,
+                    active_view: ActiveView::Subscriptions,
                     state,
                 })
             },

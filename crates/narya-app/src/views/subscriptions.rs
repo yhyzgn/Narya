@@ -41,7 +41,7 @@ pub fn render_subscriptions_view(
         .flex_col()
         .size_full()
         .bg(color_bg)
-        .gap_8()
+        .gap_4()
         .child(
             // 1. Top Metrics Row
             div()
@@ -142,6 +142,7 @@ pub fn render_subscriptions_view(
                         .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅源列表"))
                         .child(
                             div()
+                                .mt_2()
                                 .flex()
                                 .items_center()
                                 .h(px(40.0))
@@ -161,9 +162,9 @@ pub fn render_subscriptions_view(
                         )
                         .child(
                             div()
+                                .mt_2()
                                 .flex_col()
                                 .gap_3()
-                                .p_1()
                                 .children(state.subscriptions.iter()
                                     .filter(|s| s.name.to_lowercase().contains(&state.subscription_filter_text.to_lowercase()))
                                     .map(|sub| {
@@ -315,6 +316,7 @@ pub fn render_subscriptions_view(
                                 .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("更新状态"))
                                 .child(
                                     div()
+                                        .mt_2()
                                         .flex()
                                         .items_center()
                                         .gap_2()
@@ -382,17 +384,17 @@ pub fn render_subscriptions_view(
                                     let detected_format = selected_sub.and_then(|s| s.format.as_deref()).unwrap_or("");
                                     div()
                                         .flex_col()
-                                        .gap_4()
+                                        .gap_8()
                                         .child(
                                             div()
                                                 .flex()
                                                 .items_center()
                                                 .gap_3()
-                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("识别结果："))
+                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("识别结果"))
                                                 .child(
                                                     div()
                                                         .flex()
-                                                        .gap_1p5()
+                                                        .gap_2()
                                                         .child(recognition_tag("Clash", detected_format.contains("Clash")))
                                                         .child(recognition_tag("V2Ray", detected_format.contains("V2Ray")))
                                                         .child(recognition_tag("sing-box", detected_format.contains("Sing-box")))
@@ -404,7 +406,7 @@ pub fn render_subscriptions_view(
                                                 .flex()
                                                 .items_center()
                                                 .gap_3()
-                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("当前格式："))
+                                                .child(div().text_xs().text_color(color_text_secondary).flex_shrink_0().child("当前格式"))
                                                 .child(recognition_tag(detected_format, !detected_format.is_empty()))
                                         )
                                 })
@@ -557,7 +559,7 @@ fn subscription_card(
         .border(border_width)
         .border_color(border_color)
         .rounded_xl()
-        .p_5()
+        .p_2()
         .flex()
         .gap_4()
         .cursor_pointer()
@@ -643,14 +645,20 @@ fn tab_item(
 }
 
 fn recognition_tag(label: &str, active: bool) -> impl IntoElement {
-    let bg = if active { rgb(0xEEF2FF) } else { rgb(0xF1F5F9) };
-    let text = if active { rgb(0x4F46E5) } else { rgb(0x94A3B8) };
-    let border = if active { rgb(0x4F46E5) } else { rgb(0xE2E8F0) };
+    let color_green = rgb(0x10B981);
+    let mut bg: Hsla = color_green.into();
+    bg.a = 0.1; // Translucent light green background
+
+    let (bg_final, text_color, border_color) = if active {
+        (bg, color_green, color_green)
+    } else {
+        (rgb(0xF1F5F9).into(), rgb(0x94A3B8), rgb(0xE2E8F0))
+    };
 
     div()
-        .bg(bg)
+        .bg(bg_final)
         .border_1()
-        .border_color(border)
+        .border_color(border_color)
         .px_1p5()
         .py_0p5()
         .rounded_md()
@@ -661,7 +669,7 @@ fn recognition_tag(label: &str, active: bool) -> impl IntoElement {
             div()
                 .text_size(px(10.0))
                 .font_weight(if active { FontWeight::BOLD } else { FontWeight::MEDIUM })
-                .text_color(text)
+                .text_color(text_color)
                 .child(label.to_string())
         )
 }
