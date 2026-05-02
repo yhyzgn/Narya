@@ -24,22 +24,22 @@
 ### 下一步
 - Phase 2: 在 GPUI 中重建 Splash 与 Dashboard 页面。
 
-## 2026-05-02 — Kernel Orchestration & Config Persistence
+## 2026-05-02 — UI/Backend Convergence & Real Integration
 
 ### 已完成
-- **内核生命周期管理**：在 `narya-daemon` 中实现了 `KernelManager`，支持通过 `tokio::process` 异步启动、监控并销毁 `sing-box` 内核进程。
-- **系统代理自动切换**：实现了 `SystemProxy` 抽象层及 Linux `gsettings` 后端，能够真实修改操作系统的代理设置。
-- **配置持久化体系**：在 `narya-config` 中实现了基于 YAML 的 Profile 读写功能，并为 `narya-core` 的领域模型补全了 `serde` 序列化链。
-- **后端指令集扩展**：在 `main.rs` 中路由了 `StartKernel`、`StopKernel` 和 `SetSystemProxy` 等核心业务指令。
+- **持久化 IPC 通讯**：在 `AppState` 中集成了基于 `AsyncApp` 的异步消息循环，支持实时监听后端推送的 `IpcNotification`。
+- **真实业务闭环**：Dashboard 的一键连接功能已完全对接后端 `SetSystemProxy` 接口，实现了从 UI 触发真实系统代理变更。
+- **状态动态回显**：UI 的连接状态、网速、内核状态现在均优先由后端 IPC 数据驱动，并具备自动重连机制。
+- **全量联调通过**：完成了从“点击按钮 -> 后端执行 -> 状态推送回前端”的完整测试流程。
 
 ### 修改文件
-- `crates/narya-daemon/src/kernel.rs` (新模块)
-- `crates/narya-daemon/src/proxy.rs` (新模块)
-- `crates/narya-config/src/lib.rs` (重构)
-- `crates/narya-core/src/lib.rs` (派生 Trait)
+- `crates/narya-app/src/state.rs` (核心集成)
+- `crates/narya-app/src/ipc.rs` (通知循环)
+- `crates/narya-app/src/views/dashboard.rs` (交互集成)
 
 ### 下一步
-- Phase 8: 实现 UI 与后端 Daemon 的全功能闭环，替换所有前端 Mock 数据为真实后端流。
+- Phase 9: 实现真实的订阅解析引擎、远程节点加载与 Profiles 持久化编辑器。
+
 
 
 

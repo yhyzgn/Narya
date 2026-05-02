@@ -493,6 +493,12 @@ dependencies = [
 
 [[package]]
 name = "base64"
+version = "0.21.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
+
+[[package]]
+name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
@@ -3377,6 +3383,15 @@ version = "0.1.0"
 [[package]]
 name = "narya-subscription"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.21.7",
+ "narya-core",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "uuid",
+]
 
 [[package]]
 name = "narya-traffic"
@@ -5758,7 +5773,7 @@ version = "0.45.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80be9b06fbae3b8b303400ab20778c80bbaf338f563afe567cf3c9eea17b47ef"
 dependencies = [
- "base64",
+ "base64 0.22.1",
  "data-url",
  "flate2",
  "fontdb",

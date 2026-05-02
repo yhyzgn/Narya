@@ -64,10 +64,18 @@
 - [x] 在 `narya-config` 中实现 YAML 配置的持久化存储
 - [x] 为核心模型增加 `serde` 序列化支持以支持持久化
 
-## Phase 8：UI/后端逻辑闭环 (Real Integration)
+## Phase 8：UI/后端全链路集成
+状态：已完成 ✅
+
+- [x] 在 `AppState` 中集成真实的 `IpcClient` 持久连接
+- [x] 实现 Dashboard 页面一键代理开关的后端调用 (`SetSystemProxy`)
+- [x] 对接 Daemon 推送的实时流量数据通知
+- [x] 实现 UI 端的自动断线重连逻辑
+
+## Phase 9：业务深度集成 (Business Polish)
 状态：进行中 🏗️
 
-- [ ] 在 `AppState` 中集成真实的 `IpcClient` 调用，替换测速与连接的 Mock 逻辑
-- [ ] 实现 Dashboard 页面的一键连接开关，并触发后端代理切换
-- [ ] 对接 Daemon 推送的实时流量数据，并在侧边栏 Footer 真实回显
-- [ ] 实现基础订阅链接的本地持久化与加载
+- [ ] 实现订阅 URL 解析引擎，支持从远程拉取节点并同步至 `AppState`
+- [ ] 完善 `narya-daemon` 的真实测速模块（调用 `sing-box` API 或系统测试）
+- [ ] 实现侧边栏 footer 真实反映后端内核版本与运行状态
+- [ ] 开发 Profiles 编辑器的基础功能，支持持久化保存规则
