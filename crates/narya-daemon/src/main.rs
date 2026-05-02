@@ -7,13 +7,13 @@ use anyhow::Result;
 use std::fs;
 use narya_ipc::{IpcRequest, IpcResponse};
 use crate::kernel::KernelManager;
-use crate::proxy::{SystemProxy, LinuxGSettings};
+use crate::proxy::{SystemProxy, LinuxGSettings, MacOSNetworkSetup, ProxyBackend};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
 struct DaemonState {
     kernel: KernelManager,
-    proxy: LinuxGSettings,
+    proxy: ProxyBackend,
 }
 
 #[tokio::main]
@@ -28,9 +28,16 @@ async fn main() -> Result<()> {
     let listener = UnixListener::bind(socket_path)?;
     println!("Daemon listening on {}", socket_path);
 
+    // Detect OS and choose proxy backend
+    let proxy = if cfg!(target_os = "macos") {
+        ProxyBackend::MacOS(MacOSNetworkSetup)
+    } else {
+        ProxyBackend::Linux(LinuxGSettings)
+    };
+
     let state = Arc::new(Mutex::new(DaemonState {
         kernel: KernelManager::new(),
-        proxy: LinuxGSettings,
+        proxy,
     }));
 
     loop {
