@@ -50,6 +50,7 @@ impl Render for AppShell {
 
         let download_speed = active_node.map(|n| n.download_speed).unwrap_or(0.0);
         let upload_speed = active_node.map(|n| n.upload_speed).unwrap_or(0.0);
+        let is_running = state_ref.kernel_running;
 
         // --- SPEC CONSTANTS ---
         let sidebar_width = px(220.0);
@@ -196,14 +197,14 @@ impl Render for AppShell {
                                             .child(
                                                 div()
                                                     .size(px(8.0))
-                                                    .bg(rgb(0x10B981))
+                                                    .bg(if is_running { rgb(0x10B981) } else { color_text_secondary })
                                                     .rounded_full(),
                                             )
                                             .child(
                                                 div()
                                                     .text_xs()
                                                     .font_weight(FontWeight::MEDIUM)
-                                                    .child("已连接"),
+                                                    .child(if is_running { "已连接" } else { "未连接" }),
                                             ),
                                     )
                                     .child(
@@ -228,13 +229,8 @@ impl Render for AppShell {
                                             .gap_2()
                                             .text_xs()
                                             .text_color(color_text_secondary)
-                                            .child(
-                                                div()
-                                                    .child(format!("↓ {:.1} MB/s", download_speed)),
-                                            )
-                                            .child(
-                                                div().child(format!("↑ {:.1} MB/s", upload_speed)),
-                                            ),
+                                            .child(div().child(format!("↓ {:.1} MB/s", download_speed)))
+                                            .child(div().child(format!("↑ {:.1} MB/s", upload_speed))),
                                     )
                                     .child(
                                         // Chart Placeholder
@@ -310,7 +306,7 @@ impl Render for AppShell {
                     .child(
                         // Scrollable Content
                         div().flex_1().p_5().overflow_hidden().child(match view {
-                            ActiveView::Dashboard => render_dashboard_view().into_any_element(),
+                            ActiveView::Dashboard => render_dashboard_view(&self.state, cx).into_any_element(),
                             ActiveView::Nodes => {
                                 render_nodes_view(&self.state, cx).into_any_element()
                             }

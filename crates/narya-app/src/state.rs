@@ -1,5 +1,5 @@
 use narya_core;
-use narya_ipc::IpcNotification;
+use narya_ipc::{IpcNotification, IpcRequest};
 use gpui::*;
 use std::time::Duration;
 use crate::ipc::IpcClient;
@@ -29,9 +29,35 @@ impl AppState {
         cx.notify();
     }
 
+    pub fn toggle_proxy(model: Entity<Self>, cx: &mut App) {
+        let running = model.read(cx).kernel_running;
+        let next_state = !running;
+        
+        cx.spawn(move |cx: &mut AsyncApp| {
+            let mut cx = cx.clone();
+            let model = model.clone();
+            async move {
+                if let Ok(mut client) = IpcClient::connect("/tmp/narya.sock").await {
+                    let request = IpcRequest {
+                        id: 1,
+                        method: "SetSystemProxy".to_string(),
+                        params: serde_json::json!(next_state),
+                    };
+                    if let Ok(_res) = client.send_request(request).await {
+                        let _ = model.update(&mut cx, |state, cx| {
+                            state.kernel_running = next_state;
+                            cx.notify();
+                        });
+                    }
+                }
+            }
+        }).detach();
+    }
+
     pub fn start_traffic_monitor(model: Entity<Self>, cx: &mut App) {
         cx.spawn(move |cx: &mut AsyncApp| {
             let mut cx_inner = cx.clone();
+            let model = model.clone();
             async move {
                 loop {
                     // Try to connect to daemon

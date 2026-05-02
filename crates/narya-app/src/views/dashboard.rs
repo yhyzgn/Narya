@@ -1,119 +1,119 @@
 use crate::components::glass_card;
-use crate::components::switch;
+use crate::state::AppState;
 use crate::theme::Theme;
+use crate::views::app_shell::AppShell;
 use gpui::{prelude::*, *};
 
-pub fn render_dashboard_view() -> impl IntoElement {
+pub fn render_dashboard_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -> impl IntoElement {
+    let theme = Theme::default();
+    let state = model.read(cx);
+    let is_running = state.kernel_running;
+
     div()
         .flex_col()
+        .size_full()
         .child(
             div()
                 .flex()
                 .gap_6()
-                .child(proxy_card(
-                    "System Proxy",
-                    "Redirect system traffic to Narya",
-                    true,
-                ))
-                .child(proxy_card(
-                    "TUN Mode",
-                    "Virtual network interface for all apps",
-                    false,
-                )),
-        )
-        .child(
-            div().mt_6().child(
-                glass_card()
-                    .child(
-                        div()
-                            .text_lg()
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .mb_4()
-                            .child("Quick Connect"),
-                    )
-                    .child(
-                        div()
-                            .flex_col()
-                            .gap_2()
-                            .child(node_item("SG-01 (Singapore)", "12ms", true))
-                            .child(node_item("US-West (Oregon)", "156ms", false))
-                            .child(node_item("HK-Premium (Hong Kong)", "45ms", false)),
-                    ),
-            ),
+                .child(
+                    // Quick Connect Card
+                    glass_card()
+                        .w(px(400.0))
+                        .child(
+                            div()
+                                .flex_col()
+                                .items_center()
+                                .child(
+                                    div()
+                                        .size(px(80.0))
+                                        .bg(if is_running { theme.success } else { theme.border })
+                                        .rounded_full()
+                                        .flex()
+                                        .items_center()
+                                        .justify_center()
+                                        .child(
+                                            div()
+                                                .text_3xl()
+                                                .child(if is_running { "⚡" } else { "🔌" }),
+                                        ),
+                                )
+                                .child(
+                                    div()
+                                        .mt_4()
+                                        .text_xl()
+                                        .font_weight(FontWeight::BOLD)
+                                        .child(if is_running { "已连接" } else { "未连接" }),
+                                )
+                                .child(
+                                    div()
+                                        .mt_2()
+                                        .text_sm()
+                                        .text_color(theme.text_secondary)
+                                        .child("系统代理已启动"),
+                                )
+                                .child(
+                                    div()
+                                        .mt_6()
+                                        .w_full()
+                                        .child(
+                                            div()
+                                                .bg(if is_running { theme.danger } else { theme.primary })
+                                                .text_color(rgb(0xffffff))
+                                                .py_3()
+                                                .rounded_lg()
+                                                .flex()
+                                                .items_center()
+                                                .justify_center()
+                                                .cursor_pointer()
+                                                .on_mouse_down(MouseButton::Left, {
+                                                    let model = model.clone();
+                                                    move |_, _, cx| {
+                                                        AppState::toggle_proxy(model.clone(), cx);
+                                                    }
+                                                })
+                                                .child(if is_running { "断开连接" } else { "一键开启" }),
+                                        ),
+                                ),
+                        ),
+                )
+                .child(
+                    // Stats Grid
+                    div()
+                        .flex_1()
+                        .flex_col()
+                        .gap_4()
+                        .child(
+                            div()
+                                .flex()
+                                .gap_4()
+                                .child(stat_card("今日流量", "1.24 GB", theme.primary.into()))
+                                .child(stat_card("本月流量", "42.8 GB", theme.success.into())),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .gap_4()
+                                .child(stat_card("活动连接", "12", theme.warning.into()))
+                                .child(stat_card("当前延迟", "48 ms", theme.primary_light.into())),
+                        ),
+                ),
         )
 }
 
-pub fn proxy_card(
-    title: &'static str,
-    description: &'static str,
-    active: bool,
-) -> impl IntoElement {
+fn stat_card(label: &'static str, value: &'static str, color: Hsla) -> impl IntoElement {
     let theme = Theme::default();
     glass_card().flex_1().child(
         div()
-            .flex()
-            .justify_between()
-            .items_start()
+            .flex_col()
+            .child(div().text_xs().text_color(theme.text_secondary).child(label))
             .child(
                 div()
-                    .flex_col()
-                    .child(
-                        div()
-                            .text_lg()
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(title),
-                    )
-                    .child(
-                        div()
-                            .text_xs()
-                            .text_color(theme.text_secondary)
-                            .mt_1()
-                            .child(description),
-                    ),
-            )
-            .child(switch(active)),
+                    .mt_1()
+                    .text_2xl()
+                    .font_weight(FontWeight::BOLD)
+                    .text_color(color)
+                    .child(value),
+            ),
     )
-}
-
-pub fn node_item(name: &'static str, latency: &'static str, selected: bool) -> impl IntoElement {
-    let theme = Theme::default();
-    div()
-        .flex()
-        .items_center()
-        .justify_between()
-        .p_3()
-        .rounded_md()
-        .bg(if selected {
-            theme.bg
-        } else {
-            Rgba {
-                r: 0.0,
-                g: 0.0,
-                b: 0.0,
-                a: 0.0,
-            }
-        })
-        .child(
-            div()
-                .flex()
-                .items_center()
-                .child(
-                    div()
-                        .size(px(8.0))
-                        .bg(if selected {
-                            theme.success
-                        } else {
-                            theme.text_muted
-                        })
-                        .rounded_full(),
-                )
-                .child(
-                    div()
-                        .ml_3()
-                        .text_sm()
-                        .text_color(theme.text_primary)
-                        .child(name),
-                ),
-        )
-        .child(div().text_xs().text_color(theme.text_muted).child(latency))
 }
