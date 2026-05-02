@@ -3,19 +3,24 @@ use crate::theme::Theme;
 use gpui::{prelude::*, *};
 
 pub fn render_subscriptions_view() -> impl IntoElement {
-    div()
-        .flex_col()
-        .size_full()
-        .child(
-            div()
-                .flex()
-                .gap_6()
-                .child(subscription_card("Premium Plan", 0.45, "Expires in 15 days"))
-                .child(subscription_card("Free Trial", 0.82, "Expires in 2 days")),
-        )
+    div().flex_col().size_full().child(
+        div()
+            .flex()
+            .gap_6()
+            .child(subscription_card(
+                "Premium Plan",
+                0.45,
+                "Expires in 15 days",
+            ))
+            .child(subscription_card("Free Trial", 0.82, "Expires in 2 days")),
+    )
 }
 
-pub fn subscription_card(title: &'static str, usage: f32, expiry: &'static str) -> impl IntoElement {
+pub fn subscription_card(
+    title: &'static str,
+    usage: f32,
+    expiry: &'static str,
+) -> impl IntoElement {
     let theme = Theme::default();
     glass_card().w(px(380.0)).child(
         div()

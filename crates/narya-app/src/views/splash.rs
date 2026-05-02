@@ -4,7 +4,7 @@ use gpui::{prelude::*, *};
 use std::time::Duration;
 
 pub struct Splash {
-    pub(crate) progress: f32,
+    pub(super) progress: f32,
 }
 
 impl Splash {
@@ -65,75 +65,60 @@ impl Render for Splash {
 
         div()
             .size_full()
-            .relative()
+            .bg(theme.bg) // Use theme background color instead of image
+            .flex()
+            .flex_col()
+            .items_center()
+            .justify_center()
             .child(
-                // Background
-                img("resources/assets/bg_splash.png")
-                    .size_full()
-                    .absolute(),
-            )
-            .child(
+                // Brand Logo
                 div()
+                    .size(px(160.0))
+                    .mb_12()
                     .flex()
-                    .flex_col()
-                    .size_full()
                     .items_center()
                     .justify_center()
+                    .child(img("resources/assets/logo.png").size(px(140.0))),
+            )
+            .child(
+                // Progress Bar Container
+                div()
+                    .w(px(320.0))
+                    .flex_col()
+                    .items_center()
                     .child(
-                        // Brand Logo
                         div()
-                            .size(px(160.0))
-                            .mb_12()
-                            .flex()
-                            .items_center()
-                            .justify_center()
-                            .child(img("resources/assets/logo.png").size(px(140.0))),
-                    )
-                    .child(
-                        // Progress Bar Container
-                        div()
-                            .w(px(320.0))
-                            .flex_col()
-                            .items_center()
+                            .w_full()
+                            .h(px(6.0))
+                            .bg(theme.border)
+                            .rounded_full()
                             .child(
                                 div()
-                                    .w_full()
-                                    .h(px(6.0))
-                                    .bg(Rgba {
-                                        r: 1.0,
-                                        g: 1.0,
-                                        b: 1.0,
-                                        a: 0.2,
-                                    })
-                                    .rounded_full()
-                                    .child(
-                                        div()
-                                            .h_full()
-                                            .w(relative(self.progress))
-                                            .bg(theme.primary)
-                                            .rounded_full(),
-                                    ),
+                                    .h_full()
+                                    .w(relative(self.progress))
+                                    .bg(theme.primary)
+                                    .rounded_full(),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .mt_4()
+                            .flex()
+                            .w_full()
+                            .justify_between()
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(theme.text_secondary)
+                                    .child(loading_text),
                             )
                             .child(
                                 div()
-                                    .mt_4()
-                                    .flex()
-                                    .w_full()
-                                    .justify_between()
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(theme.text_secondary)
-                                            .child(loading_text),
-                                    )
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(theme.text_muted)
-                                            .child(format!("{}%", (self.progress * 100.0) as i32)),
-                                    ),
+                                    .text_xs()
+                                    .text_color(theme.text_muted)
+                                    .child(format!("{}%", (self.progress * 100.0) as i32)),
                             ),
-                    )
+                    ),
             )
             .child(
                 // Footer Info

@@ -7,8 +7,8 @@ use crate::views::ActiveView;
 use gpui::{prelude::*, *};
 
 pub struct AppShell {
-    pub(crate) active_view: ActiveView,
-    pub(crate) handle: WeakEntity<Self>,
+    pub(super) active_view: ActiveView,
+    pub(super) handle: WeakEntity<Self>,
 }
 
 impl AppShell {
@@ -38,267 +38,239 @@ impl Render for AppShell {
 
         div()
             .size_full()
-            .relative()
+            .bg(theme.bg) // Use theme background color instead of image
+            .flex()
+            .text_color(theme.text_primary)
             .child(
-                // Background
-                img("resources/assets/bg_splash.png")
-                    .size_full()
-                    .absolute(),
-            )
-            .child(
+                // Sidebar
                 div()
-                    .flex()
-                    .size_full()
-                    .text_color(theme.text_primary)
+                    .w(px(270.0))
+                    .h_full()
+                    .border_r_1()
+                    .border_color(theme.border)
+                    .bg(theme.surface) // Solid surface for sidebar
+                    .flex_col()
                     .child(
-                        // Sidebar
+                        // Sidebar Logo
                         div()
-                            .w(px(270.0))
-                            .h_full()
-                            .border_r_1()
-                            .border_color(theme.border)
-                            .bg(Rgba {
-                                r: 1.0,
-                                g: 1.0,
-                                b: 1.0,
-                                a: 0.4,
-                            }) // Semi-transparent sidebar
-                            .flex_col()
+                            .h(px(118.0))
+                            .flex()
+                            .items_center()
+                            .px_6()
                             .child(
-                                // Sidebar Logo
                                 div()
-                                    .h(px(118.0))
+                                    .size(px(32.0))
+                                    .bg(theme.primary)
+                                    .rounded_md()
                                     .flex()
                                     .items_center()
-                                    .px_6()
+                                    .justify_center()
                                     .child(
                                         div()
-                                            .size(px(32.0))
-                                            .bg(theme.primary)
-                                            .rounded_md()
-                                            .flex()
-                                            .items_center()
-                                            .justify_center()
-                                            .child(
-                                                div()
-                                                    .text_lg()
-                                                    .font_weight(FontWeight::BOLD)
-                                                    .text_color(rgb(0xffffff))
-                                                    .child("N"),
-                                            ),
-                                    )
-                                    .child(
-                                        div()
-                                            .ml_3()
-                                            .text_xl()
-                                            .font_weight(FontWeight::SEMIBOLD)
-                                            .child("Narya"),
+                                            .text_lg()
+                                            .font_weight(FontWeight::BOLD)
+                                            .text_color(rgb(0xffffff))
+                                            .child("N"),
                                     ),
                             )
                             .child(
-                                // Nav items
                                 div()
-                                    .flex_1()
-                                    .px_3()
-                                    .overflow_hidden()
-                                    .child(nav_item("Dashboard", view == ActiveView::Dashboard, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Dashboard;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item("Nodes", view == ActiveView::Nodes, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Nodes;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item(
-                                        "Connections",
-                                        view == ActiveView::Connections,
-                                        {
-                                            let handle = handle.clone();
-                                            move |_, _, cx| {
-                                                let _ = handle.update(cx, |this, cx| {
-                                                    this.active_view = ActiveView::Connections;
-                                                    cx.notify();
-                                                });
-                                            }
-                                        },
-                                    ))
-                                    .child(nav_item("Rules", view == ActiveView::Rules, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Rules;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item(
-                                        "Subscriptions",
-                                        view == ActiveView::Subscriptions,
-                                        {
-                                            let handle = handle.clone();
-                                            move |_, _, cx| {
-                                                let _ = handle.update(cx, |this, cx| {
-                                                    this.active_view = ActiveView::Subscriptions;
-                                                    cx.notify();
-                                                });
-                                            }
-                                        },
-                                    ))
-                                    .child(nav_item("Config", view == ActiveView::Config, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Config;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item("Logs", view == ActiveView::Logs, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Logs;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item("Tools", view == ActiveView::Tools, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Tools;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item("Settings", view == ActiveView::Settings, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::Settings;
-                                                cx.notify();
-                                            });
-                                        }
-                                    }))
-                                    .child(nav_item("About", view == ActiveView::About, {
-                                        let handle = handle.clone();
-                                        move |_, _, cx| {
-                                            let _ = handle.update(cx, |this, cx| {
-                                                this.active_view = ActiveView::About;
-                                                cx.notify();
-                                            });
-                                        }
-                                    })),
-                            )
+                                    .ml_3()
+                                    .text_xl()
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .child("Narya"),
+                            ),
+                    )
+                    .child(
+                        // Nav items
+                        div()
+                            .flex_1()
+                            .px_3()
+                            .overflow_hidden()
+                            .child(nav_item("Dashboard", view == ActiveView::Dashboard, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Dashboard;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Nodes", view == ActiveView::Nodes, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Nodes;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Connections", view == ActiveView::Connections, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Connections;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Rules", view == ActiveView::Rules, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Rules;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item(
+                                "Subscriptions",
+                                view == ActiveView::Subscriptions,
+                                {
+                                    let handle = handle.clone();
+                                    move |_, _, cx| {
+                                        let _ = handle.update(cx, |this, cx| {
+                                            this.active_view = ActiveView::Subscriptions;
+                                            cx.notify();
+                                        });
+                                    }
+                                },
+                            ))
+                            .child(nav_item("Config", view == ActiveView::Config, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Config;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Logs", view == ActiveView::Logs, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Logs;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Tools", view == ActiveView::Tools, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Tools;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Settings", view == ActiveView::Settings, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Settings;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("About", view == ActiveView::About, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::About;
+                                        cx.notify();
+                                    });
+                                }
+                            })),
+                    )
+                    .child(
+                        // Sidebar Footer
+                        div().p_6().child(
+                            glass_card()
+                                .p_3()
+                                .flex()
+                                .items_center()
+                                .child(div().size(px(10.0)).bg(theme.success).rounded_full())
+                                .child(
+                                    div()
+                                        .ml_3()
+                                        .text_xs()
+                                        .text_color(theme.text_secondary)
+                                        .child("Connected to SG-01"),
+                                ),
+                        ),
+                    ),
+            )
+            .child(
+                // Main Area
+                div()
+                    .flex_1()
+                    .flex_col()
+                    .child(
+                        // Header
+                        div()
+                            .h(px(118.0))
+                            .w_full()
+                            .flex()
+                            .items_center()
+                            .justify_between()
+                            .px_8()
+                            .child(div().text_2xl().font_weight(FontWeight::SEMIBOLD).child(
+                                match view {
+                                    ActiveView::Dashboard => "Dashboard",
+                                    ActiveView::Nodes => "Nodes",
+                                    ActiveView::Connections => "Connections",
+                                    ActiveView::Rules => "Rules",
+                                    ActiveView::Subscriptions => "Subscriptions",
+                                    ActiveView::Config => "Config",
+                                    ActiveView::Logs => "Logs",
+                                    ActiveView::Tools => "Tools",
+                                    ActiveView::Settings => "Settings",
+                                    ActiveView::About => "About",
+                                },
+                            ))
                             .child(
-                                // Sidebar Footer
-                                div().p_6().child(
-                                    glass_card()
-                                        .p_3()
+                                div().flex().items_center().child(
+                                    div()
+                                        .size(px(40.0))
+                                        .bg(theme.surface)
+                                        .border_1()
+                                        .border_color(theme.border)
+                                        .rounded_full()
                                         .flex()
                                         .items_center()
-                                        .child(div().size(px(10.0)).bg(theme.success).rounded_full())
-                                        .child(
-                                            div()
-                                                .ml_3()
-                                                .text_xs()
-                                                .text_color(theme.text_secondary)
-                                                .child("Connected to SG-01"),
-                                        ),
+                                        .justify_center()
+                                        .child("🔔"), // placeholder icon
                                 ),
                             ),
                     )
                     .child(
-                        // Main Area
+                        // Content
+                        div().flex_1().overflow_hidden().px_8().child(match view {
+                            ActiveView::Dashboard => render_dashboard_view().into_any_element(),
+                            ActiveView::Nodes => render_nodes_view().into_any_element(),
+                            ActiveView::Subscriptions => {
+                                render_subscriptions_view().into_any_element()
+                            }
+                            _ => div()
+                                .child(format!("{:?} View Placeholder", view))
+                                .into_any_element(),
+                        }),
+                    )
+                    .child(
+                        // Footer
                         div()
-                            .flex_1()
-                            .flex_col()
+                            .h(px(30.0))
+                            .w_full()
+                            .border_t_1()
+                            .border_color(theme.border)
+                            .flex()
+                            .items_center()
+                            .px_8()
                             .child(
-                                // Header
                                 div()
-                                    .h(px(118.0))
-                                    .w_full()
-                                    .flex()
-                                    .items_center()
-                                    .justify_between()
-                                    .px_8()
-                                    .child(
-                                        div()
-                                            .text_2xl()
-                                            .font_weight(FontWeight::SEMIBOLD)
-                                            .child(match view {
-                                                ActiveView::Dashboard => "Dashboard",
-                                                ActiveView::Nodes => "Nodes",
-                                                ActiveView::Connections => "Connections",
-                                                ActiveView::Rules => "Rules",
-                                                ActiveView::Subscriptions => "Subscriptions",
-                                                ActiveView::Config => "Config",
-                                                ActiveView::Logs => "Logs",
-                                                ActiveView::Tools => "Tools",
-                                                ActiveView::Settings => "Settings",
-                                                ActiveView::About => "About",
-                                            }),
-                                    )
-                                    .child(
-                                        div().flex().items_center().child(
-                                            div()
-                                                .size(px(40.0))
-                                                .bg(theme.surface)
-                                                .border_1()
-                                                .border_color(theme.border)
-                                                .rounded_full()
-                                                .flex()
-                                                .items_center()
-                                                .justify_center()
-                                                .child("🔔"), // placeholder icon
-                                        ),
-                                    ),
-                            )
-                            .child(
-                                // Content
-                                div()
-                                    .flex_1()
-                                    .overflow_hidden()
-                                    .px_8()
-                                    .child(match view {
-                                        ActiveView::Dashboard => {
-                                            render_dashboard_view().into_any_element()
-                                        }
-                                        ActiveView::Nodes => render_nodes_view().into_any_element(),
-                                        ActiveView::Subscriptions => {
-                                            render_subscriptions_view().into_any_element()
-                                        }
-                                        _ => div()
-                                            .child(format!("{:?} View Placeholder", view))
-                                            .into_any_element(),
-                                    }),
-                            )
-                            .child(
-                                // Footer
-                                div()
-                                    .h(px(30.0))
-                                    .w_full()
-                                    .border_t_1()
-                                    .border_color(theme.border)
-                                    .flex()
-                                    .items_center()
-                                    .px_8()
-                                    .child(
-                                        div()
-                                            .text_xs()
-                                            .text_color(theme.text_secondary)
-                                            .child("Narya v1.0.0-alpha | Kernels: sing-box (Active)"),
-                                    ),
+                                    .text_xs()
+                                    .text_color(theme.text_secondary)
+                                    .child("Narya v1.0.0-alpha | Kernels: sing-box (Active)"),
                             ),
                     ),
             )

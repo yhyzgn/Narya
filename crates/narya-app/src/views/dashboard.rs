@@ -1,7 +1,7 @@
 use crate::components::glass_card;
-use gpui::{prelude::*, *};
-use crate::theme::Theme;
 use crate::components::switch;
+use crate::theme::Theme;
+use gpui::{prelude::*, *};
 
 pub fn render_dashboard_view() -> impl IntoElement {
     div()
@@ -43,7 +43,11 @@ pub fn render_dashboard_view() -> impl IntoElement {
         )
 }
 
-pub fn proxy_card(title: &'static str, description: &'static str, active: bool) -> impl IntoElement {
+pub fn proxy_card(
+    title: &'static str,
+    description: &'static str,
+    active: bool,
+) -> impl IntoElement {
     let theme = Theme::default();
     glass_card().flex_1().child(
         div()
