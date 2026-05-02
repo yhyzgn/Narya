@@ -1,10 +1,19 @@
 mod components;
 mod theme;
 
-use components::{glass_card, switch};
+use components::{badge, glass_card, search_input, switch};
 use gpui::{prelude::*, *};
 use std::time::Duration;
 use theme::Theme;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum ActiveView {
+    Dashboard,
+    Nodes,
+    Subscriptions,
+    Rules,
+    Settings,
+}
 
 struct Splash {
     progress: f32,
@@ -45,7 +54,12 @@ impl Splash {
                             window_bounds: Some(WindowBounds::Windowed(bounds)),
                             ..Default::default()
                         },
-                        |_, cx| cx.new(|_| AppShell),
+                        |_, cx| {
+                            cx.new(|cx| AppShell {
+                                active_view: ActiveView::Dashboard,
+                                handle: cx.entity().downgrade(),
+                            })
+                        },
                     )
                     .expect("failed to open main window");
                 });
@@ -111,11 +125,16 @@ impl Render for Splash {
     }
 }
 
-struct AppShell;
+struct AppShell {
+    active_view: ActiveView,
+    handle: WeakEntity<Self>,
+}
 
 impl Render for AppShell {
     fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
         let theme = Theme::default();
+        let view = self.active_view;
+        let handle = self.handle.clone();
 
         div()
             .flex()
@@ -166,11 +185,51 @@ impl Render for AppShell {
                         div()
                             .flex_1()
                             .px_3()
-                            .child(nav_item("Dashboard", true))
-                            .child(nav_item("Nodes", false))
-                            .child(nav_item("Subscriptions", false))
-                            .child(nav_item("Rules", false))
-                            .child(nav_item("Settings", false)),
+                            .child(nav_item("Dashboard", view == ActiveView::Dashboard, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Dashboard;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Nodes", view == ActiveView::Nodes, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Nodes;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Subscriptions", view == ActiveView::Subscriptions, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Subscriptions;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Rules", view == ActiveView::Rules, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Rules;
+                                        cx.notify();
+                                    });
+                                }
+                            }))
+                            .child(nav_item("Settings", view == ActiveView::Settings, {
+                                let handle = handle.clone();
+                                move |_, _, cx| {
+                                    let _ = handle.update(cx, |this, cx| {
+                                        this.active_view = ActiveView::Settings;
+                                        cx.notify();
+                                    });
+                                }
+                            })),
                     )
                     .child(
                         // Sidebar Footer
@@ -208,7 +267,13 @@ impl Render for AppShell {
                                 div()
                                     .text_2xl()
                                     .font_weight(FontWeight::SEMIBOLD)
-                                    .child("Dashboard"),
+                                    .child(match view {
+                                        ActiveView::Dashboard => "Dashboard",
+                                        ActiveView::Nodes => "Nodes",
+                                        ActiveView::Subscriptions => "Subscriptions",
+                                        ActiveView::Rules => "Rules",
+                                        ActiveView::Settings => "Settings",
+                                    }),
                             )
                             .child(
                                 div().flex().items_center().child(
@@ -231,49 +296,16 @@ impl Render for AppShell {
                             .flex_1()
                             .overflow_hidden()
                             .px_8()
-                            .child(
-                                div()
-                                    .flex()
-                                    .gap_6()
-                                    .child(proxy_card(
-                                        "System Proxy",
-                                        "Redirect system traffic to Narya",
-                                        true,
-                                    ))
-                                    .child(proxy_card(
-                                        "TUN Mode",
-                                        "Virtual network interface for all apps",
-                                        false,
-                                    )),
-                            )
-                            .child(
-                                div().mt_6().child(
-                                    glass_card()
-                                        .child(
-                                            div()
-                                                .text_lg()
-                                                .font_weight(FontWeight::SEMIBOLD)
-                                                .mb_4()
-                                                .child("Quick Connect"),
-                                        )
-                                        .child(
-                                            div()
-                                                .flex_col()
-                                                .gap_2()
-                                                .child(node_item("SG-01 (Singapore)", "12ms", true))
-                                                .child(node_item(
-                                                    "US-West (Oregon)",
-                                                    "156ms",
-                                                    false,
-                                                ))
-                                                .child(node_item(
-                                                    "HK-Premium (Hong Kong)",
-                                                    "45ms",
-                                                    false,
-                                                )),
-                                        ),
-                                ),
-                            ),
+                            .child(match view {
+                                ActiveView::Dashboard => render_dashboard_view().into_any_element(),
+                                ActiveView::Nodes => render_nodes_view().into_any_element(),
+                                ActiveView::Subscriptions => {
+                                    render_subscriptions_view().into_any_element()
+                                }
+                                _ => div()
+                                    .child(format!("{:?} View Placeholder", view))
+                                    .into_any_element(),
+                            }),
                     )
                     .child(
                         // Footer
@@ -296,7 +328,11 @@ impl Render for AppShell {
     }
 }
 
-fn nav_item(label: &'static str, active: bool) -> impl IntoElement {
+fn nav_item(
+    label: &'static str,
+    active: bool,
+    on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
+) -> impl IntoElement {
     let theme = Theme::default();
     div()
         .flex()
@@ -324,7 +360,258 @@ fn nav_item(label: &'static str, active: bool) -> impl IntoElement {
         } else {
             FontWeight::NORMAL
         })
+        .cursor_pointer()
+        .on_mouse_down(MouseButton::Left, on_click)
         .child(label)
+}
+
+fn render_dashboard_view() -> impl IntoElement {
+    div()
+        .flex_col()
+        .child(
+            div()
+                .flex()
+                .gap_6()
+                .child(proxy_card(
+                    "System Proxy",
+                    "Redirect system traffic to Narya",
+                    true,
+                ))
+                .child(proxy_card(
+                    "TUN Mode",
+                    "Virtual network interface for all apps",
+                    false,
+                )),
+        )
+        .child(
+            div().mt_6().child(
+                glass_card()
+                    .child(
+                        div()
+                            .text_lg()
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .mb_4()
+                            .child("Quick Connect"),
+                    )
+                    .child(
+                        div()
+                            .flex_col()
+                            .gap_2()
+                            .child(node_item("SG-01 (Singapore)", "12ms", true))
+                            .child(node_item("US-West (Oregon)", "156ms", false))
+                            .child(node_item("HK-Premium (Hong Kong)", "45ms", false)),
+                    ),
+            ),
+        )
+}
+
+fn render_nodes_view() -> impl IntoElement {
+    let theme = Theme::default();
+    div()
+        .flex_col()
+        .size_full()
+        .child(
+            // Toolbar
+            div()
+                .flex()
+                .items_center()
+                .justify_between()
+                .mb_6()
+                .child(search_input())
+                .child(
+                    div()
+                        .flex()
+                        .gap_2()
+                        .child(badge("All Protocols", theme.primary_light))
+                        .child(badge("Fastest", theme.success)),
+                ),
+        )
+        .child(
+            // Node List
+            div()
+                .flex_1()
+                .overflow_hidden()
+                .flex_col()
+                .gap_3()
+                .child(node_card("SG-01 (Singapore)", "Shadowsocks", "12ms", true))
+                .child(node_card("US-West (Oregon)", "VLESS", "156ms", false))
+                .child(node_card("HK-Premium (Hong Kong)", "Trojan", "45ms", false))
+                .child(node_card("JP-Tokyo", "Shadowsocks", "68ms", false))
+                .child(node_card("DE-Frankfurt", "VLESS", "180ms", false)),
+        )
+}
+
+fn render_subscriptions_view() -> impl IntoElement {
+    div()
+        .flex_col()
+        .size_full()
+        .child(
+            div()
+                .flex()
+                .gap_6()
+                .child(subscription_card("Premium Plan", 0.45, "Expires in 15 days"))
+                .child(subscription_card("Free Trial", 0.82, "Expires in 2 days")),
+        )
+}
+
+fn subscription_card(title: &'static str, usage: f32, expiry: &'static str) -> impl IntoElement {
+    let theme = Theme::default();
+    glass_card().w(px(380.0)).child(
+        div()
+            .flex_col()
+            .child(
+                div()
+                    .flex()
+                    .justify_between()
+                    .items_center()
+                    .mb_4()
+                    .child(
+                        div()
+                            .text_lg()
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(title),
+                    )
+                    .child(badge("Active", theme.success)),
+            )
+            .child(
+                div()
+                    .flex()
+                    .justify_between()
+                    .text_xs()
+                    .text_color(theme.text_secondary)
+                    .mb_1()
+                    .child("Traffic Usage")
+                    .child(format!("{} / 100 GB", (usage * 100.0) as i32)),
+            )
+            .child(
+                div()
+                    .w_full()
+                    .h(px(6.0))
+                    .bg(theme.border)
+                    .rounded_full()
+                    .mb_4()
+                    .child(
+                        div()
+                            .h_full()
+                            .w(relative(usage))
+                            .bg(if usage > 0.8 {
+                                theme.danger
+                            } else {
+                                theme.primary
+                            })
+                            .rounded_full(),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .justify_between()
+                    .items_center()
+                    .child(div().text_xs().text_color(theme.text_muted).child(expiry))
+                    .child(
+                        div()
+                            .flex()
+                            .gap_2()
+                            .child(
+                                div()
+                                    .border_1()
+                                    .border_color(theme.border)
+                                    .rounded_md()
+                                    .px_3()
+                                    .py_1()
+                                    .text_xs()
+                                    .child("Update"),
+                            )
+                            .child(
+                                div()
+                                    .bg(theme.surface)
+                                    .border_1()
+                                    .border_color(theme.border)
+                                    .rounded_md()
+                                    .px_3()
+                                    .py_1()
+                                    .text_xs()
+                                    .child("Copy Link"),
+                            ),
+                    ),
+            ),
+    )
+}
+
+fn node_card(
+    name: &'static str,
+    protocol: &'static str,
+    latency: &'static str,
+    selected: bool,
+) -> impl IntoElement {
+    let theme = Theme::default();
+    glass_card().p_4().child(
+        div()
+            .flex()
+            .items_center()
+            .justify_between()
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .child(
+                        div()
+                            .size(px(10.0))
+                            .bg(if selected {
+                                theme.success
+                            } else {
+                                theme.text_muted
+                            })
+                            .rounded_full(),
+                    )
+                    .child(
+                        div()
+                            .ml_3()
+                            .flex_col()
+                            .child(div().font_weight(FontWeight::SEMIBOLD).child(name))
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(theme.text_secondary)
+                                    .child(protocol),
+                            ),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap_4()
+                    .child(badge(
+                        latency,
+                        if selected {
+                            theme.success
+                        } else {
+                            theme.text_muted
+                        },
+                    ))
+                    .child(
+                        div()
+                            .bg(if selected {
+                                theme.primary
+                            } else {
+                                theme.surface
+                            })
+                            .border_1()
+                            .border_color(theme.border)
+                            .rounded_md()
+                            .px_3()
+                            .py_1()
+                            .text_xs()
+                            .text_color(if selected {
+                                rgb(0xffffff)
+                            } else {
+                                theme.text_primary
+                            })
+                            .child("Connect"),
+                    ),
+            ),
+    )
 }
 
 fn proxy_card(title: &'static str, description: &'static str, active: bool) -> impl IntoElement {

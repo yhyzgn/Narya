@@ -6,8 +6,8 @@
 
 ## 当前阶段
 
-Phase 3: 高级与业务页面迁移 (GPUI)。
-项目已成功还原 Splash 启动页（含动画与跳转逻辑）和 Dashboard 核心面板（Sidebar, TopBar, Proxy Mode Cards, Nodes List）。现在需要开始迁移更复杂的业务页面，如节点列表、订阅管理、规则配置等。
+Phase 4: 核心逻辑集成 (GPUI)。
+项目已成功实现视图路由机制及核心业务页面（Nodes 节点列表、Subscriptions 订阅管理）。现在需要开始将 UI 与 Rust 后端核心逻辑对接，实现真实数据的加载、排序及交互。
 
 ## 已完成
 
@@ -16,19 +16,18 @@ Phase 3: 高级与业务页面迁移 (GPUI)。
 - **GPUI Bootstrap**：成功在项目根目录初始化 GPUI 环境并实现基础窗口。
 - **Design System Phase 1**：建立了基于 `Theme` 模块的 Design Tokens，实现了 `GlassCard` 基础组件，并搭建了 canonical 1536x1024 的 `AppShell` 布局结构。
 - **Phase 2: Splash & Dashboard**：成功在 GPUI 中 1:1 还原了 Splash 启动页动画及 Dashboard 核心布局与组件（Switch, Proxy Cards, Node Items）。实现了 Splash 到 Dashboard 的平滑窗口切换。
-- **验证通过**：全工作区编译 (`cargo clippy`) 与格式化 (`cargo fmt`) 均通过。
-- **注意**：由于当前 CLI 环境缺少 Display Server (X11/Wayland)，`cargo run` 会在平台初始化阶段 panic；且 `#[gpui::test]` 宏在此环境下触发 rustc SIGSEGV，因此 UI 逻辑通过静态检查和代码审计验证。
+- **Phase 3: Business Pages & Routing**：实现了基于 Enum 的视图路由机制，在 `AppShell` 中动态切换 Dashboard、Nodes 和 Subscriptions 视图。完成了 Nodes 列表（含 Badge 与 SearchInput）及 Subscriptions 详情卡片的还原。
 
 ## 尚未完成
 
-- 迁移业务页面：节点 (Nodes)、订阅 (Subscriptions)、规则 (Rules)、日志 (Logs)、工具箱 (Tools)、设置 (Settings)。
-- 建立更完整的 UI 组件库 (Select, Dropdown, Table, Input 等)。
-- 对接 Rust 核心领域模型提供真实数据驱动。
+- 对接 Rust 核心领域模型提供真实数据驱动（节点发现、订阅解析）。
+- 实现高级交互功能：节点延迟实时测试、规则编辑器、工具箱诊断等。
+- 完善 UI 组件库 (Select, Dropdown, Table, Input 等)。
 
 ## 阻塞/风险
 
-- 高级交互组件（如 Dropdown, Popover, Table）在 GPUI 中仍需高度自研，需确保护持 Narya 视觉风格。
+- GPUI 0.2.x 版本的 API 变动及宏展开在某些环境下（如无显示器环境）可能导致编译开销巨大或运行时 panic。
 
 ## 下一个建议任务
 
-执行 `.prompt/004-phase-3-business-pages.md`：开始实现 Nodes 节点列表与 Subscriptions 订阅管理页面。
+执行 `.prompt/005-phase-4-core-logic-integration.md`：将 UI 视图与 Rust 核心逻辑对接。

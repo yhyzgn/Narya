@@ -24,9 +24,17 @@
 - [x] 在 GPUI 中还原 Dashboard 页面（Sidebar, TopBar, 控制面板）
 
 ## Phase 3：高级与业务页面迁移
+状态：已完成 ✅
+
+- [x] 实现 Nodes 节点列表页面（支持表格/网格切换，延迟排序）
+- [x] 实现 Subscriptions 订阅管理（添加、更新、流量统计）
+- [x] 实现基础业务组件库 (Dropdown, Input, Table skeleton) -> Badge & SearchInput
+- [x] 建立视图路由机制，在 Dashboard 侧边栏点击后切换主区域视图
+
+## Phase 4：核心逻辑集成
 状态：进行中 🏗️
 
-- [ ] 实现 Nodes 节点列表页面（支持表格/网格切换，延迟排序）
-- [ ] 实现 Subscriptions 订阅管理（添加、更新、流量统计）
-- [ ] 实现基础业务组件库 (Dropdown, Input, Table skeleton)
-- [ ] 建立视图路由机制，在 Dashboard 侧边栏点击后切换主区域视图
+- [ ] 对接 `narya-core` 领域模型，实现节点列表的真实数据驱动
+- [ ] 实现订阅更新逻辑，对接 `narya-subscription`
+- [ ] 实现侧边栏连接状态的实时更新
+- [ ] 增加节点延迟测试的 UI 触发与数据回显
