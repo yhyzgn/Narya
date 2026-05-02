@@ -16,6 +16,8 @@ Phase 3: 高级与业务页面迁移 (GPUI)。
 - **GPUI Bootstrap**：成功在项目根目录初始化 GPUI 环境并实现基础窗口。
 - **Design System Phase 1**：建立了基于 `Theme` 模块的 Design Tokens，实现了 `GlassCard` 基础组件，并搭建了 canonical 1536x1024 的 `AppShell` 布局结构。
 - **Phase 2: Splash & Dashboard**：成功在 GPUI 中 1:1 还原了 Splash 启动页动画及 Dashboard 核心布局与组件（Switch, Proxy Cards, Node Items）。实现了 Splash 到 Dashboard 的平滑窗口切换。
+- **验证通过**：全工作区编译 (`cargo clippy`) 与格式化 (`cargo fmt`) 均通过。
+- **注意**：由于当前 CLI 环境缺少 Display Server (X11/Wayland)，`cargo run` 会在平台初始化阶段 panic；且 `#[gpui::test]` 宏在此环境下触发 rustc SIGSEGV，因此 UI 逻辑通过静态检查和代码审计验证。
 
 ## 尚未完成
 
