@@ -25,7 +25,7 @@ pub fn render_subscriptions_view(
         .as_ref()
         .and_then(|id| state.subscriptions.iter().find(|s| s.id == *id));
 
-    // Pre-calculate owned strings for metrics to avoid lifetime issues
+    // Pre-calculate owned strings
     let current_sub_name = selected_sub.map(|s| s.name.clone()).unwrap_or_else(|| "未选择".to_string());
     let node_count_str = selected_sub.map(|s| s.node_count.to_string()).unwrap_or_else(|| "0".to_string());
     let node_stats_str = format!("{} 可用 / 0 失败", selected_sub.map(|s| s.used_nodes).unwrap_or(0));
@@ -41,7 +41,7 @@ pub fn render_subscriptions_view(
         .flex_col()
         .size_full()
         .bg(color_bg)
-        .gap_8() // Increased global gap for better vertical rhythm
+        .gap_8()
         .child(
             // 1. Top Metrics Row
             div()
@@ -119,7 +119,7 @@ pub fn render_subscriptions_view(
                 ),
         )
         .child(
-            // 2. Main Middle Section - Added mt_2 for extra separation
+            // 2. Main Middle Section - Respecting user's mt_4
             div()
                 .mt_4()
                 .flex()
@@ -128,19 +128,24 @@ pub fn render_subscriptions_view(
                 .flex_1()
                 .overflow_hidden()
                 .child(
-                    // Column 1: List
+                    // Column 1: Subscription Source List (Applying User Standard)
                     div()
-                        .flex_col()
                         .w(px(380.0))
-                        .flex_shrink_0() // CRITICAL: Don't shrink list
-                        .gap_4()
-                        .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅源列表"))
+                        .flex_shrink_0()
+                        .flex_col()
+                        .bg(color_card)
+                        .border_1()
+                        .border_color(color_border)
+                        .rounded_2xl()
+                        .p_4() // User refined padding
+                        .gap_6()
+                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅源列表")) // User refined title
                         .child(
                             div()
                                 .flex()
                                 .items_center()
                                 .h(px(40.0))
-                                .bg(color_card)
+                                .bg(rgb(0xF8FAFC))
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_lg()
@@ -174,19 +179,19 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Column 2: Details Panel
+                    // Column 2: Details Panel (PRESERVING USER REFINEMENTS)
                     div()
-                        .min_w(px(500.0)) // Minimum width
-                        .flex_1() // Use flex_1 to take remaining space instead of grow(2.0) for better control
+                        .min_w(px(500.0))
+                        .flex_1()
                         .flex_col()
                         .bg(color_card)
                         .border_1()
                         .border_color(color_border)
                         .rounded_2xl()
-                        .p_4()
+                        .p_4() // User standard
                         .gap_6()
                         .overflow_hidden()
-                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅详情"))
+                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅详情")) // User standard
                         .child(
                             div()
                                 .mt_2()
@@ -229,7 +234,7 @@ pub fn render_subscriptions_view(
                         .child(
                             div()
                                 .flex_col()
-                                .gap_8()
+                                .gap_8() // User standard
                                 .child(form_row("名称".to_string(), current_sub_name.clone(), false))
                                 .child(form_row("订阅 URL".to_string(), sub_url_display, true))
                                 .child(form_row("User-Agent".to_string(), "Narya/1.0.0 (Windows; sing-box)".to_string(), true))
@@ -291,22 +296,23 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Column 3: Status
+                    // Column 3: Status & Recognition (Applying User Standard)
                     div()
                         .w(px(300.0))
-                        .flex_shrink_0() // Don't shrink status column
+                        .flex_shrink_0()
                         .flex_col()
                         .gap_6()
                         .child(
+                            // 3a. Update Status
                             div()
                                 .flex_col()
                                 .bg(color_card)
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_4()
-                                .gap_5()
-                                .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("更新状态"))
+                                .p_4() // User standard
+                                .gap_6()
+                                .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("更新状态")) // User standard
                                 .child(
                                     div()
                                         .flex()
@@ -331,23 +337,55 @@ pub fn render_subscriptions_view(
                                 )
                         )
                         .child(
+                            // 3b. Auto Update
                             div()
                                 .flex_col()
                                 .bg(color_card)
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_6()
-                                .gap_5()
+                                .p_4() // User standard
+                                .gap_6()
+                                .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("自动更新")) // User standard
                                 .child(
                                     div()
                                         .flex()
                                         .justify_between()
                                         .items_center()
-                                        .child(div().text_xs().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("自动更新"))
-                                        .child(div().w(px(34.0)).h(px(18.0)).bg(color_brand).rounded_full())
+                                        .child(div().text_xs().text_color(color_text_secondary).child("定期自动检查更新"))
+                                        .child(
+                                            div()
+                                                .w(px(38.0))
+                                                .h(px(20.0))
+                                                .bg(color_brand)
+                                                .rounded_full()
+                                                .flex()
+                                                .items_center()
+                                                .px_1()
+                                                .child(div().size(px(14.0)).bg(white()).rounded_full().ml_auto())
+                                        )
                                 )
                                 .child(div().flex().justify_between().items_baseline().child(div().text_xs().text_color(color_text_secondary).child("更新间隔")).child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("每 30 分钟")))
+                        )
+                        .child(
+                            // 3c. Format Recognition
+                            div()
+                                .flex_col()
+                                .bg(color_card)
+                                .border_1()
+                                .border_color(color_border)
+                                .rounded_2xl()
+                                .p_4() // User standard
+                                .gap_6()
+                                .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("格式识别")) // User standard
+                                .child(
+                                    div()
+                                        .flex_col()
+                                        .gap_3()
+                                        .child(recognition_item("Clash YAML", true))
+                                        .child(recognition_item("V2Ray Base64", false))
+                                        .child(recognition_item("Sing-box JSON", false))
+                                )
                         )
                 )
         )
@@ -359,7 +397,7 @@ pub fn render_subscriptions_view(
                 .h(px(240.0))
                 .gap_6()
                 .child(
-                    // Traffic Analytics
+                    // Traffic Analytics (Applying User Standard)
                     div()
                         .flex_1()
                         .flex_col()
@@ -367,8 +405,8 @@ pub fn render_subscriptions_view(
                         .border_1()
                         .border_color(color_border)
                         .rounded_2xl()
-                        .p_6()
-                        .gap_4()
+                        .p_4() // User standard
+                        .gap_6()
                         .child(
                             div()
                                 .flex()
@@ -379,7 +417,7 @@ pub fn render_subscriptions_view(
                                         .flex()
                                         .items_baseline()
                                         .gap_3()
-                                        .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("流量趋势"))
+                                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("流量趋势")) // User standard
                                         .child(div().text_xs().text_color(color_text_secondary).child("(最近 30 天)"))
                                 )
                                 .child(div().text_xs().text_color(color_text_primary).bg(rgb(0xF1F5F9)).px_2().py_1().rounded_md().child("30 天 ▾"))
@@ -397,18 +435,18 @@ pub fn render_subscriptions_view(
                         )
                 )
                 .child(
-                    // Subscription Priority
+                    // Subscription Priority (Applying User Standard)
                     div()
                         .w(px(500.0))
                         .flex_shrink_0()
                         .flex_col()
-                        .gap_4()
-                        .child(
-                            div()
-                                .flex_col()
-                                .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅优先级"))
-                                .child(div().text_xs().text_color(color_text_secondary).child("按优先级从高到低使用，拖拽可调整顺序"))
-                        )
+                        .bg(color_card)
+                        .border_1()
+                        .border_color(color_border)
+                        .rounded_2xl()
+                        .p_4() // User standard
+                        .gap_6()
+                        .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("订阅优先级")) // User standard
                         .child(
                             div()
                                 .flex()
@@ -487,12 +525,13 @@ fn subscription_card(
 ) -> impl IntoElement {
     let border_color = if active { rgb(0x4F46E5) } else { rgb(0xE2E8F0) };
     let border_width = if active { px(2.0) } else { px(1.0) };
+    let card_bg = if active { rgb(0xF8F9FF) } else { rgb(0xFFFFFF) };
 
     let mut icon_bg: Hsla = rgb(0x4F46E5).into();
     icon_bg.a = 0.1;
 
     div()
-        .bg(rgb(0xFFFFFF))
+        .bg(card_bg)
         .border(border_width)
         .border_color(border_color)
         .rounded_xl()
@@ -552,7 +591,7 @@ fn subscription_card(
                                 .items_center()
                                 .gap_3()
                                 .child(div().text_color(rgb(0x64748B)).text_size(px(10.0)).font_weight(FontWeight::BOLD).child("34%"))
-                                .child(div().w(px(44.0)).h(px(4.0)).bg(rgb(0xF1F5F9)).rounded_full().child(div().w(relative(0.34)).h_full().bg(rgb(0x10B981)).rounded_full()))
+                                .child(div().w(px(40.0)).h(px(4.0)).bg(rgb(0xE5E7EB)).rounded_full().child(div().w(relative(0.34)).h_full().bg(rgb(0x10B981)).rounded_full()))
                         )
                 )
         )
@@ -578,6 +617,26 @@ fn tab_item(
                 .font_weight(if active { FontWeight::BOLD } else { FontWeight::MEDIUM })
                 .text_color(if active { rgb(0x4F46E5) } else { rgb(0x64748B) })
                 .child(label)
+        )
+}
+
+fn recognition_item(label: &'static str, detected: bool) -> impl IntoElement {
+    div()
+        .flex()
+        .justify_between()
+        .items_center()
+        .child(div().text_xs().text_color(rgb(0x64748B)).child(label))
+        .child(
+            div()
+                .flex()
+                .items_center()
+                .gap_1()
+                .child(if detected {
+                    div().size(px(8.0)).bg(rgb(0x10B981)).rounded_full().into_any_element()
+                } else {
+                    div().size(px(8.0)).border_1().border_color(rgb(0xE2E8F0)).rounded_full().into_any_element()
+                })
+                .child(div().text_xs().text_color(if detected { rgb(0x0F172A) } else { rgb(0x94A3B8) }).child(if detected { "已识别" } else { "未检测" }))
         )
 }
 
