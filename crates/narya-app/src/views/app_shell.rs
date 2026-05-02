@@ -1,4 +1,5 @@
 use crate::components::glass_card;
+use crate::state::AppState;
 use crate::theme::Theme;
 use crate::views::dashboard::render_dashboard_view;
 use crate::views::nodes::render_nodes_view;
@@ -8,20 +9,23 @@ use gpui::{prelude::*, *};
 
 pub struct AppShell {
     pub(super) active_view: ActiveView,
+    pub(super) state: Entity<AppState>,
     pub(super) handle: WeakEntity<Self>,
 }
 
 impl AppShell {
     pub fn open(cx: &mut App) {
+        let state = cx.new(|_| AppState::mock_data());
         let bounds = Bounds::centered(None, size(px(1536.0), px(1024.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 ..Default::default()
             },
-            |_, cx| {
+            move |_, cx| {
                 cx.new(|cx| AppShell {
                     active_view: ActiveView::Dashboard,
+                    state,
                     handle: cx.entity().downgrade(),
                 })
             },
@@ -31,10 +35,18 @@ impl AppShell {
 }
 
 impl Render for AppShell {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = Theme::default();
         let view = self.active_view;
+        let state_ref = self.state.read(cx);
         let handle = self.handle.clone();
+
+        let active_node_name = state_ref
+            .active_node_id
+            .as_ref()
+            .and_then(|id| state_ref.nodes.iter().find(|n| n.id == *id))
+            .map(|n| n.name.clone())
+            .unwrap_or_else(|| "Not Connected".to_string());
 
         div()
             .size_full()
@@ -195,7 +207,7 @@ impl Render for AppShell {
                                         .ml_3()
                                         .text_xs()
                                         .text_color(theme.text_secondary)
-                                        .child("Connected to SG-01"),
+                                        .child(format!("Connected to {}", active_node_name)),
                                 ),
                         ),
                     ),
@@ -247,9 +259,11 @@ impl Render for AppShell {
                         // Content
                         div().flex_1().overflow_hidden().px_8().child(match view {
                             ActiveView::Dashboard => render_dashboard_view().into_any_element(),
-                            ActiveView::Nodes => render_nodes_view().into_any_element(),
+                            ActiveView::Nodes => {
+                                render_nodes_view(&self.state, cx).into_any_element()
+                            }
                             ActiveView::Subscriptions => {
-                                render_subscriptions_view().into_any_element()
+                                render_subscriptions_view(&self.state, cx).into_any_element()
                             }
                             _ => div()
                                 .child(format!("{:?} View Placeholder", view))

@@ -1,9 +1,14 @@
 use crate::components::{badge, glass_card, search_input};
+use crate::state::AppState;
 use crate::theme::Theme;
+use crate::views::app_shell::AppShell;
 use gpui::{prelude::*, *};
+use narya_core::Node;
 
-pub fn render_nodes_view() -> impl IntoElement {
+pub fn render_nodes_view(model: &Entity<AppState>, cx: &mut Context<AppShell>) -> impl IntoElement {
     let theme = Theme::default();
+    let state = model.read(cx);
+
     div()
         .flex_col()
         .size_full()
@@ -30,86 +35,104 @@ pub fn render_nodes_view() -> impl IntoElement {
                 .overflow_hidden()
                 .flex_col()
                 .gap_3()
-                .child(node_card("SG-01 (Singapore)", "Shadowsocks", "12ms", true))
-                .child(node_card("US-West (Oregon)", "VLESS", "156ms", false))
-                .child(node_card("HK-Premium (Hong Kong)", "Trojan", "45ms", false))
-                .child(node_card("JP-Tokyo", "Shadowsocks", "68ms", false))
-                .child(node_card("DE-Frankfurt", "VLESS", "180ms", false)),
+                .children(state.nodes.iter().map(|n| {
+                    let is_selected = state.active_node_id.as_deref() == Some(&n.id);
+                    node_card(n, is_selected, {
+                        let model = model.clone();
+                        let node_id = n.id.clone();
+                        move |_, _, cx| {
+                            model.update(cx, |state, cx| {
+                                state.active_node_id = Some(node_id.clone());
+                                cx.notify();
+                            });
+                        }
+                    })
+                })),
         )
 }
 
 pub fn node_card(
-    name: &'static str,
-    protocol: &'static str,
-    latency: &'static str,
+    node: &Node,
     selected: bool,
+    on_click: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
 ) -> impl IntoElement {
     let theme = Theme::default();
-    glass_card().p_4().child(
-        div()
-            .flex()
-            .items_center()
-            .justify_between()
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .child(
-                        div()
-                            .size(px(10.0))
-                            .bg(if selected {
+    let name = node.name.clone();
+    let protocol = node.protocol.clone();
+    let latency_str = node
+        .latency
+        .map(|l| format!("{}ms", l))
+        .unwrap_or_else(|| "--".to_string());
+
+    glass_card()
+        .p_4()
+        .cursor_pointer()
+        .on_mouse_down(MouseButton::Left, on_click)
+        .child(
+            div()
+                .flex()
+                .items_center()
+                .justify_between()
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .child(
+                            div()
+                                .size(px(10.0))
+                                .bg(if selected {
+                                    theme.success
+                                } else {
+                                    theme.text_muted
+                                })
+                                .rounded_full(),
+                        )
+                        .child(
+                            div()
+                                .ml_3()
+                                .flex_col()
+                                .child(div().font_weight(FontWeight::SEMIBOLD).child(name))
+                                .child(
+                                    div()
+                                        .text_xs()
+                                        .text_color(theme.text_secondary)
+                                        .child(protocol),
+                                ),
+                        ),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap_4()
+                        .child(badge(
+                            latency_str,
+                            if selected {
                                 theme.success
                             } else {
                                 theme.text_muted
-                            })
-                            .rounded_full(),
-                    )
-                    .child(
-                        div()
-                            .ml_3()
-                            .flex_col()
-                            .child(div().font_weight(FontWeight::SEMIBOLD).child(name))
-                            .child(
-                                div()
-                                    .text_xs()
-                                    .text_color(theme.text_secondary)
-                                    .child(protocol),
-                            ),
-                    ),
-            )
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap_4()
-                    .child(badge(
-                        latency,
-                        if selected {
-                            theme.success
-                        } else {
-                            theme.text_muted
-                        },
-                    ))
-                    .child(
-                        div()
-                            .bg(if selected {
-                                theme.primary
-                            } else {
-                                theme.surface
-                            })
-                            .border_1()
-                            .border_color(theme.border)
-                            .rounded_md()
-                            .px_3()
-                            .py_1()
-                            .text_xs()
-                            .text_color(if selected {
-                                rgb(0xffffff)
-                            } else {
-                                theme.text_primary
-                            })
-                            .child("Connect"),
-                    ),
-            ),
-    )
+                            },
+                        ))
+                        .child(
+                            div()
+                                .bg(if selected {
+                                    theme.primary
+                                } else {
+                                    theme.surface
+                                })
+                                .border_1()
+                                .border_color(theme.border)
+                                .rounded_md()
+                                .px_3()
+                                .py_1()
+                                .text_xs()
+                                .text_color(if selected {
+                                    rgb(0xffffff)
+                                } else {
+                                    theme.text_primary
+                                })
+                                .child("Connect"),
+                        ),
+                ),
+        )
 }

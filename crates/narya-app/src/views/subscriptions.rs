@@ -1,27 +1,31 @@
 use crate::components::{badge, glass_card};
+use crate::state::AppState;
 use crate::theme::Theme;
+use crate::views::app_shell::AppShell;
 use gpui::{prelude::*, *};
+use narya_core::Subscription;
 
-pub fn render_subscriptions_view() -> impl IntoElement {
+pub fn render_subscriptions_view(
+    model: &Entity<AppState>,
+    cx: &mut Context<AppShell>,
+) -> impl IntoElement {
+    let state = model.read(cx);
     div().flex_col().size_full().child(
         div()
             .flex()
             .gap_6()
-            .child(subscription_card(
-                "Premium Plan",
-                0.45,
-                "Expires in 15 days",
-            ))
-            .child(subscription_card("Free Trial", 0.82, "Expires in 2 days")),
+            .children(state.subscriptions.iter().map(subscription_card)),
     )
 }
 
-pub fn subscription_card(
-    title: &'static str,
-    usage: f32,
-    expiry: &'static str,
-) -> impl IntoElement {
+pub fn subscription_card(sub: &Subscription) -> impl IntoElement {
     let theme = Theme::default();
+    let usage_ratio = (sub.traffic_used / sub.traffic_total) as f32;
+    let title = sub.name.clone();
+    let expiry = sub.expiration.clone();
+    let status = sub.status.clone();
+    let usage_str = format!("{:.1} / {:.1} GB", sub.traffic_used, sub.traffic_total);
+
     glass_card().w(px(380.0)).child(
         div()
             .flex_col()
@@ -37,7 +41,7 @@ pub fn subscription_card(
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(title),
                     )
-                    .child(badge("Active", theme.success)),
+                    .child(badge(status, theme.success)),
             )
             .child(
                 div()
@@ -47,7 +51,7 @@ pub fn subscription_card(
                     .text_color(theme.text_secondary)
                     .mb_1()
                     .child("Traffic Usage")
-                    .child(format!("{} / 100 GB", (usage * 100.0) as i32)),
+                    .child(usage_str),
             )
             .child(
                 div()
@@ -59,8 +63,8 @@ pub fn subscription_card(
                     .child(
                         div()
                             .h_full()
-                            .w(relative(usage))
-                            .bg(if usage > 0.8 {
+                            .w(relative(usage_ratio))
+                            .bg(if usage_ratio > 0.8 {
                                 theme.danger
                             } else {
                                 theme.primary
@@ -73,7 +77,12 @@ pub fn subscription_card(
                     .flex()
                     .justify_between()
                     .items_center()
-                    .child(div().text_xs().text_color(theme.text_muted).child(expiry))
+                    .child(
+                        div()
+                            .text_xs()
+                            .text_color(theme.text_muted)
+                            .child(format!("Expires: {}", expiry)),
+                    )
                     .child(
                         div()
                             .flex()
