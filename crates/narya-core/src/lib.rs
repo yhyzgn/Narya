@@ -42,6 +42,7 @@ pub struct Subscription {
     pub traffic_total: f64,
     pub expiration: String,
     pub status: String,
+    pub format: Option<String>,
 }
 
 #[cfg(test)]

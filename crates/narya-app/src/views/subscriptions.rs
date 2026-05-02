@@ -377,17 +377,18 @@ pub fn render_subscriptions_view(
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_4() // User standard
+                                .p_4()
                                 .gap_6()
-                                .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("格式识别")) // User standard
-                                .child(
+                                .child(div().text_base().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("格式识别"))
+                                .child({
+                                    let detected_format = selected_sub.and_then(|s| s.format.as_deref()).unwrap_or("");
                                     div()
                                         .flex_col()
                                         .gap_3()
-                                        .child(recognition_item("Clash YAML", true))
-                                        .child(recognition_item("V2Ray Base64", false))
-                                        .child(recognition_item("Sing-box JSON", false))
-                                )
+                                        .child(recognition_item("Clash YAML", detected_format == "Clash YAML"))
+                                        .child(recognition_item("V2Ray Base64", detected_format == "V2Ray Base64"))
+                                        .child(recognition_item("Sing-box JSON", detected_format == "Sing-box JSON"))
+                                })
                         )
                 )
         )
