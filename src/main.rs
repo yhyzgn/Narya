@@ -3,8 +3,29 @@ mod theme;
 
 use components::{badge, glass_card, search_input, switch};
 use gpui::{prelude::*, *};
+use std::borrow::Cow;
 use std::time::Duration;
 use theme::Theme;
+
+struct Assets;
+
+impl AssetSource for Assets {
+    fn load(&self, path: &str) -> anyhow::Result<Option<Cow<'static, [u8]>>> {
+        // Diagnostic print to see what path is being requested
+        // println!("Loading asset: {}", path);
+        match std::fs::read(path) {
+            Ok(file) => Ok(Some(Cow::Owned(file))),
+            Err(_) => {
+                // println!("Failed to load asset {}: {}", path, e);
+                Ok(None)
+            }
+        }
+    }
+
+    fn list(&self, _path: &str) -> anyhow::Result<Vec<SharedString>> {
+        Ok(vec![])
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum ActiveView {
@@ -81,62 +102,72 @@ impl Render for Splash {
         };
 
         div()
-            .flex()
-            .flex_col()
             .size_full()
-            .items_center()
-            .justify_center()
-            .bg(theme.bg)
+            .relative()
             .child(
-                // Brand Logo
+                // Background
+                img("ui/splash-background-2k.png").size_full().absolute(),
+            )
+            .child(
                 div()
-                    .size(px(160.0))
-                    .mb_12()
                     .flex()
+                    .flex_col()
+                    .size_full()
                     .items_center()
                     .justify_center()
                     .child(
-                        img("ui/icons/narya-logo-transparent-1080.png")
-                            .size(px(140.0))
-                    ),
-            )
-            .child(
-                // Progress Bar Container
-                div()
-                    .w(px(320.0))
-                    .flex_col()
-                    .items_center()
-                    .child(
+                        // Brand Logo
                         div()
-                            .w_full()
-                            .h(px(6.0))
-                            .bg(theme.border)
-                            .rounded_full()
-                            .child(
-                                div()
-                                    .h_full()
-                                    .w(relative(self.progress))
-                                    .bg(theme.primary)
-                                    .rounded_full(),
-                            ),
+                            .size(px(160.0))
+                            .mb_12()
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .child(img("ui/icons/narya-logo-transparent-1080.png").size(px(140.0))),
                     )
                     .child(
+                        // Progress Bar Container
                         div()
-                            .mt_4()
-                            .flex()
-                            .w_full()
-                            .justify_between()
+                            .w(px(320.0))
+                            .flex_col()
+                            .items_center()
                             .child(
                                 div()
-                                    .text_xs()
-                                    .text_color(theme.text_secondary)
-                                    .child(loading_text),
+                                    .w_full()
+                                    .h(px(6.0))
+                                    .bg(Rgba {
+                                        r: 1.0,
+                                        g: 1.0,
+                                        b: 1.0,
+                                        a: 0.2,
+                                    })
+                                    .rounded_full()
+                                    .child(
+                                        div()
+                                            .h_full()
+                                            .w(relative(self.progress))
+                                            .bg(theme.primary)
+                                            .rounded_full(),
+                                    ),
                             )
                             .child(
                                 div()
-                                    .text_xs()
-                                    .text_color(theme.text_muted)
-                                    .child(format!("{}%", (self.progress * 100.0) as i32)),
+                                    .mt_4()
+                                    .flex()
+                                    .w_full()
+                                    .justify_between()
+                                    .child(
+                                        div()
+                                            .text_xs()
+                                            .text_color(theme.text_secondary)
+                                            .child(loading_text),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_xs()
+                                            .text_color(theme.text_muted)
+                                            .child(format!("{}%", (self.progress * 100.0) as i32)),
+                                    ),
                             ),
                     ),
             )
@@ -177,242 +208,262 @@ impl Render for AppShell {
         let handle = self.handle.clone();
 
         div()
-            .flex()
             .size_full()
-            .bg(theme.bg)
-            .text_color(theme.text_primary)
+            .relative()
             .child(
-                // Sidebar
+                // Background
+                img("ui/splash-background-2k.png").size_full().absolute(),
+            )
+            .child(
                 div()
-                    .w(px(270.0))
-                    .h_full()
-                    .border_r_1()
-                    .border_color(theme.border)
-                    .flex_col()
+                    .flex()
+                    .size_full()
+                    .text_color(theme.text_primary)
                     .child(
-                        // Sidebar Logo
+                        // Sidebar
                         div()
-                            .h(px(118.0))
-                            .flex()
-                            .items_center()
-                            .px_6()
+                            .w(px(270.0))
+                            .h_full()
+                            .border_r_1()
+                            .border_color(theme.border)
+                            .bg(Rgba {
+                                r: 1.0,
+                                g: 1.0,
+                                b: 1.0,
+                                a: 0.4,
+                            }) // Semi-transparent sidebar
+                            .flex_col()
                             .child(
+                                // Sidebar Logo
                                 div()
-                                    .size(px(32.0))
-                                    .bg(theme.primary)
-                                    .rounded_md()
+                                    .h(px(118.0))
                                     .flex()
                                     .items_center()
-                                    .justify_center()
+                                    .px_6()
                                     .child(
                                         div()
-                                            .text_lg()
-                                            .font_weight(FontWeight::BOLD)
-                                            .text_color(rgb(0xffffff))
-                                            .child("N"),
+                                            .size(px(32.0))
+                                            .bg(theme.primary)
+                                            .rounded_md()
+                                            .flex()
+                                            .items_center()
+                                            .justify_center()
+                                            .child(
+                                                div()
+                                                    .text_lg()
+                                                    .font_weight(FontWeight::BOLD)
+                                                    .text_color(rgb(0xffffff))
+                                                    .child("N"),
+                                            ),
+                                    )
+                                    .child(
+                                        div()
+                                            .ml_3()
+                                            .text_xl()
+                                            .font_weight(FontWeight::SEMIBOLD)
+                                            .child("Narya"),
                                     ),
                             )
                             .child(
+                                // Nav items
                                 div()
-                                    .ml_3()
-                                    .text_xl()
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .child("Narya"),
-                            ),
-                    )
-                    .child(
-                        // Nav items
-                        div()
-                            .flex_1()
-                            .px_3()
-                            .overflow_hidden()
-                            .child(nav_item("Dashboard", view == ActiveView::Dashboard, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Dashboard;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Nodes", view == ActiveView::Nodes, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Nodes;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Connections", view == ActiveView::Connections, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Connections;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Rules", view == ActiveView::Rules, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Rules;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Subscriptions", view == ActiveView::Subscriptions, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Subscriptions;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Config", view == ActiveView::Config, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Config;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Logs", view == ActiveView::Logs, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Logs;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Tools", view == ActiveView::Tools, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Tools;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("Settings", view == ActiveView::Settings, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::Settings;
-                                        cx.notify();
-                                    });
-                                }
-                            }))
-                            .child(nav_item("About", view == ActiveView::About, {
-                                let handle = handle.clone();
-                                move |_, _, cx| {
-                                    let _ = handle.update(cx, |this, cx| {
-                                        this.active_view = ActiveView::About;
-                                        cx.notify();
-                                    });
-                                }
-                            })),
-                    )
-                    .child(
-                        // Sidebar Footer
-                        div().p_6().child(
-                            glass_card()
-                                .p_3()
-                                .flex()
-                                .items_center()
-                                .child(div().size(px(10.0)).bg(theme.success).rounded_full())
-                                .child(
-                                    div()
-                                        .ml_3()
-                                        .text_xs()
-                                        .text_color(theme.text_secondary)
-                                        .child("Connected to SG-01"),
-                                ),
-                        ),
-                    ),
-            )
-            .child(
-                // Main Area
-                div()
-                    .flex_1()
-                    .flex_col()
-                    .child(
-                        // Header
-                        div()
-                            .h(px(118.0))
-                            .w_full()
-                            .flex()
-                            .items_center()
-                            .justify_between()
-                            .px_8()
-                            .child(
-                                div()
-                                    .text_2xl()
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .child(match view {
-                                        ActiveView::Dashboard => "Dashboard",
-                                        ActiveView::Nodes => "Nodes",
-                                        ActiveView::Connections => "Connections",
-                                        ActiveView::Rules => "Rules",
-                                        ActiveView::Subscriptions => "Subscriptions",
-                                        ActiveView::Config => "Config",
-                                        ActiveView::Logs => "Logs",
-                                        ActiveView::Tools => "Tools",
-                                        ActiveView::Settings => "Settings",
-                                        ActiveView::About => "About",
-                                    }),
+                                    .flex_1()
+                                    .px_3()
+                                    .overflow_hidden()
+                                    .child(nav_item("Dashboard", view == ActiveView::Dashboard, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Dashboard;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item("Nodes", view == ActiveView::Nodes, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Nodes;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item(
+                                        "Connections",
+                                        view == ActiveView::Connections,
+                                        {
+                                            let handle = handle.clone();
+                                            move |_, _, cx| {
+                                                let _ = handle.update(cx, |this, cx| {
+                                                    this.active_view = ActiveView::Connections;
+                                                    cx.notify();
+                                                });
+                                            }
+                                        },
+                                    ))
+                                    .child(nav_item("Rules", view == ActiveView::Rules, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Rules;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item(
+                                        "Subscriptions",
+                                        view == ActiveView::Subscriptions,
+                                        {
+                                            let handle = handle.clone();
+                                            move |_, _, cx| {
+                                                let _ = handle.update(cx, |this, cx| {
+                                                    this.active_view = ActiveView::Subscriptions;
+                                                    cx.notify();
+                                                });
+                                            }
+                                        },
+                                    ))
+                                    .child(nav_item("Config", view == ActiveView::Config, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Config;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item("Logs", view == ActiveView::Logs, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Logs;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item("Tools", view == ActiveView::Tools, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Tools;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item("Settings", view == ActiveView::Settings, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::Settings;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }))
+                                    .child(nav_item("About", view == ActiveView::About, {
+                                        let handle = handle.clone();
+                                        move |_, _, cx| {
+                                            let _ = handle.update(cx, |this, cx| {
+                                                this.active_view = ActiveView::About;
+                                                cx.notify();
+                                            });
+                                        }
+                                    })),
                             )
                             .child(
-                                div().flex().items_center().child(
-                                    div()
-                                        .size(px(40.0))
-                                        .bg(theme.surface)
-                                        .border_1()
-                                        .border_color(theme.border)
-                                        .rounded_full()
+                                // Sidebar Footer
+                                div().p_6().child(
+                                    glass_card()
+                                        .p_3()
                                         .flex()
                                         .items_center()
-                                        .justify_center()
-                                        .child("🔔"), // placeholder icon
+                                        .child(
+                                            div().size(px(10.0)).bg(theme.success).rounded_full(),
+                                        )
+                                        .child(
+                                            div()
+                                                .ml_3()
+                                                .text_xs()
+                                                .text_color(theme.text_secondary)
+                                                .child("Connected to SG-01"),
+                                        ),
                                 ),
                             ),
                     )
                     .child(
-                        // Content
+                        // Main Area
                         div()
                             .flex_1()
-                            .overflow_hidden()
-                            .px_8()
-                            .child(match view {
-                                ActiveView::Dashboard => render_dashboard_view().into_any_element(),
-                                ActiveView::Nodes => render_nodes_view().into_any_element(),
-                                ActiveView::Subscriptions => {
-                                    render_subscriptions_view().into_any_element()
-                                }
-                                _ => div()
-                                    .child(format!("{:?} View Placeholder", view))
-                                    .into_any_element(),
-                            }),
-                    )
-                    .child(
-                        // Footer
-                        div()
-                            .h(px(30.0))
-                            .w_full()
-                            .border_t_1()
-                            .border_color(theme.border)
-                            .flex()
-                            .items_center()
-                            .px_8()
+                            .flex_col()
                             .child(
+                                // Header
                                 div()
-                                    .text_xs()
-                                    .text_color(theme.text_secondary)
-                                    .child("Narya v1.0.0-alpha | Kernels: sing-box (Active)"),
+                                    .h(px(118.0))
+                                    .w_full()
+                                    .flex()
+                                    .items_center()
+                                    .justify_between()
+                                    .px_8()
+                                    .child(
+                                        div().text_2xl().font_weight(FontWeight::SEMIBOLD).child(
+                                            match view {
+                                                ActiveView::Dashboard => "Dashboard",
+                                                ActiveView::Nodes => "Nodes",
+                                                ActiveView::Connections => "Connections",
+                                                ActiveView::Rules => "Rules",
+                                                ActiveView::Subscriptions => "Subscriptions",
+                                                ActiveView::Config => "Config",
+                                                ActiveView::Logs => "Logs",
+                                                ActiveView::Tools => "Tools",
+                                                ActiveView::Settings => "Settings",
+                                                ActiveView::About => "About",
+                                            },
+                                        ),
+                                    )
+                                    .child(
+                                        div().flex().items_center().child(
+                                            div()
+                                                .size(px(40.0))
+                                                .bg(theme.surface)
+                                                .border_1()
+                                                .border_color(theme.border)
+                                                .rounded_full()
+                                                .flex()
+                                                .items_center()
+                                                .justify_center()
+                                                .child("🔔"), // placeholder icon
+                                        ),
+                                    ),
+                            )
+                            .child(
+                                // Content
+                                div().flex_1().overflow_hidden().px_8().child(match view {
+                                    ActiveView::Dashboard => {
+                                        render_dashboard_view().into_any_element()
+                                    }
+                                    ActiveView::Nodes => render_nodes_view().into_any_element(),
+                                    ActiveView::Subscriptions => {
+                                        render_subscriptions_view().into_any_element()
+                                    }
+                                    _ => div()
+                                        .child(format!("{:?} View Placeholder", view))
+                                        .into_any_element(),
+                                }),
+                            )
+                            .child(
+                                // Footer
+                                div()
+                                    .h(px(30.0))
+                                    .w_full()
+                                    .border_t_1()
+                                    .border_color(theme.border)
+                                    .flex()
+                                    .items_center()
+                                    .px_8()
+                                    .child(
+                                        div().text_xs().text_color(theme.text_secondary).child(
+                                            "Narya v1.0.0-alpha | Kernels: sing-box (Active)",
+                                        ),
+                                    ),
                             ),
                     ),
             )
@@ -533,16 +584,17 @@ fn render_nodes_view() -> impl IntoElement {
 }
 
 fn render_subscriptions_view() -> impl IntoElement {
-    div()
-        .flex_col()
-        .size_full()
-        .child(
-            div()
-                .flex()
-                .gap_6()
-                .child(subscription_card("Premium Plan", 0.45, "Expires in 15 days"))
-                .child(subscription_card("Free Trial", 0.82, "Expires in 2 days")),
-        )
+    div().flex_col().size_full().child(
+        div()
+            .flex()
+            .gap_6()
+            .child(subscription_card(
+                "Premium Plan",
+                0.45,
+                "Expires in 15 days",
+            ))
+            .child(subscription_card("Free Trial", 0.82, "Expires in 2 days")),
+    )
 }
 
 fn subscription_card(title: &'static str, usage: f32, expiry: &'static str) -> impl IntoElement {
@@ -794,23 +846,25 @@ fn open_main_window(cx: &mut App) {
 }
 
 fn main() {
-    gpui_platform::application().run(|cx: &mut App| {
-        let bounds = Bounds::centered(None, size(px(600.0), px(400.0)), cx);
-        cx.open_window(
-            WindowOptions {
-                window_bounds: Some(WindowBounds::Windowed(bounds)),
-                titlebar: Some(TitlebarOptions {
-                    title: None,
-                    appears_transparent: true,
+    gpui_platform::application()
+        .with_assets(Assets)
+        .run(|cx: &mut App| {
+            let bounds = Bounds::centered(None, size(px(600.0), px(400.0)), cx);
+            cx.open_window(
+                WindowOptions {
+                    window_bounds: Some(WindowBounds::Windowed(bounds)),
+                    titlebar: Some(TitlebarOptions {
+                        title: None,
+                        appears_transparent: true,
+                        ..Default::default()
+                    }),
+                    window_background: WindowBackgroundAppearance::Transparent,
+                    kind: WindowKind::PopUp,
                     ..Default::default()
-                }),
-                window_background: WindowBackgroundAppearance::Transparent,
-                kind: WindowKind::PopUp,
-                ..Default::default()
-            },
-            |_, cx| cx.new(Splash::new),
-        )
-        .expect("failed to open splash window");
-        cx.activate(true);
-    });
+                },
+                |_, cx| cx.new(Splash::new),
+            )
+            .expect("failed to open splash window");
+            cx.activate(true);
+        });
 }
