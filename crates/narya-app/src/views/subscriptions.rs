@@ -41,7 +41,7 @@ pub fn render_subscriptions_view(
         .flex_col()
         .size_full()
         .bg(color_bg)
-        .gap_6()
+        .gap_8() // Increased global gap for better vertical rhythm
         .child(
             // 1. Top Metrics Row
             div()
@@ -119,8 +119,9 @@ pub fn render_subscriptions_view(
                 ),
         )
         .child(
-            // 2. Main Middle Section
+            // 2. Main Middle Section - Added mt_2 for extra separation
             div()
+                .mt_2()
                 .flex()
                 .w_full()
                 .gap_6()
