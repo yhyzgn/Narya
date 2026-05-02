@@ -152,8 +152,17 @@ impl AppState {
                         }
                     });
 
-                    if let Ok(content) = narya_subscription::fetch_remote_subscription(&url).await {
+                    // Execute the network request inside a Tokio runtime since reqwest requires it
+                    let fetch_result = cx.background_executor().spawn(async move {
+                        let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+                        rt.block_on(async {
+                            narya_subscription::fetch_remote_subscription(&url).await
+                        })
+                    }).await;
+
+                    if let Ok(content) = fetch_result {
                         if let Ok((format, new_nodes)) = narya_subscription::parse_subscription(&content) {
+
                             let _ = model.update(&mut cx, |state, cx| {
                                 if let Some(sub) = state.subscriptions.iter_mut().find(|s| s.id == sub_id) {
                                     sub.status = "更新成功".to_string();
