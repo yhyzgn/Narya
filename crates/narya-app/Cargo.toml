@@ -20,3 +20,4 @@ tray-icon = "0.19"
 narya-ipc = { path = "../narya-ipc" }
 narya-core = { path = "../narya-core" }
 narya-config = { path = "../narya-config" }
+narya-subscription = { path = "../narya-subscription" }
