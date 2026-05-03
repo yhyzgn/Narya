@@ -18,7 +18,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
         .flex_col()
         .size_full()
         .bg(color_bg)
-        .gap_6()
+        .gap_4()
         .child(
             // --- 1. Top Metrics Row (5 Cards) ---
             div()
@@ -36,7 +36,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
             div()
                 .flex()
                 .flex_1()
-                .gap_6()
+                .gap_4()
                 .overflow_hidden()
                 .child(
                     // Left Column: Categories
@@ -70,7 +70,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                         .flex()
                         .flex_col()
                         .flex_1()
-                        .gap_6()
+                        .gap_4()
                         .overflow_hidden()
                         .child(
                             // General Settings
@@ -116,7 +116,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                         .child(
                             div()
                                 .flex()
-                                .gap_6()
+                                .gap_4()
                                 .child(
                                     // Default Config
                                     div()
@@ -127,19 +127,19 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                         .border_1()
                                         .border_color(color_border)
                                         .rounded_2xl()
-                                        .p_6()
-                                        .gap_5()
+                                        .p_4()
+                                        .gap_2()
                                         .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("默认配置"))
                                         .child(
                                             div()
                                                 .flex()
-                                                .gap_4()
+                                                .gap_2()
                                                 .child(
                                                     div()
                                                         .flex()
                                                         .flex_col()
                                                         .flex_1()
-                                                        .gap_4()
+                                                        .gap_2()
                                                         .child(setting_dropdown_stacked("默认 Profile", "Narya Default"))
                                                         .child(setting_dropdown_stacked("启动模式", "规则模式"))
                                                 )
@@ -148,7 +148,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                                         .flex()
                                                         .flex_col()
                                                         .flex_1()
-                                                        .gap_4()
+                                                        .gap_2()
                                                         .child(setting_dropdown_stacked("默认策略组", "🚀 Proxy / 自动选择"))
                                                 )
                                         )
@@ -163,14 +163,14 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                         .border_1()
                                         .border_color(color_border)
                                         .rounded_2xl()
-                                        .p_6()
-                                        .gap_5()
+                                        .p_4()
+                                        .gap_2()
                                         .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("本地端口"))
                                         .child(
                                             div()
                                                 .flex()
                                                 .flex_col()
-                                                .gap_3()
+                                                .gap_2()
                                                 .child(setting_input_port("HTTP 端口", "7890"))
                                                 .child(setting_input_port("SOCKS 端口", "7891"))
                                                 .child(setting_input_port("API 端口", "9090"))
@@ -186,8 +186,8 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_6()
-                                .gap_5()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("IPv6 快捷设置"))
                                 .child(
                                     div()
@@ -227,19 +227,21 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_6()
-                                .gap_5()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("外观预览"))
                                 .child(
                                     div()
                                         .flex()
-                                        .gap_8()
+                                        .flex_1()
+                                        .justify_between()
+                                        .items_center()
                                         .child(
                                             div()
                                                 .flex()
                                                 .flex_col()
                                                 .flex_1()
-                                                .gap_3()
+                                                .gap_2()
                                                 .child(div().text_xs().text_color(color_text_secondary).child("主题模式"))
                                                 .child(
                                                     div()
@@ -254,8 +256,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                             div()
                                                 .flex()
                                                 .flex_col()
-                                                .flex_1()
-                                                .gap_3()
+                                                .gap_2()
                                                 .child(div().text_xs().text_color(color_text_secondary).child("主色调"))
                                                 .child(
                                                     div()
@@ -268,7 +269,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                                         .child(color_swatch(rgb(0xEF4444), false)) // Red
                                                         .child(
                                                             div()
-                                                                .size(px(24.0))
+                                                                .size(px(32.0))
                                                                 .rounded_md()
                                                                 .bg(rgb(0x6366F1)) // Placeholder for gradient
                                                         )
@@ -284,7 +285,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                         .flex_col()
                         .w(px(320.0))
                         .flex_shrink_0()
-                        .gap_6()
+                        .gap_4()
                         .overflow_hidden()
                         .child(
                             // Kernel Management
@@ -295,8 +296,8 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_5()
-                                .gap_4()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("内核管理"))
                                 .child(
                                     div()
@@ -310,7 +311,7 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .child(
                                     div()
                                         .flex()
-                                        .gap_3()
+                                        .gap_2()
                                         .child(mini_btn_full("检查版本", IconName::Dashboard))
                                         .child(mini_btn_full("管理内核", IconName::Settings))
                                 )
@@ -324,14 +325,14 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_5()
-                                .gap_4()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("权限状态"))
                                 .child(
                                     div()
                                         .flex()
                                         .flex_col()
-                                        .gap_3()
+                                        .gap_2()
                                         .child(permission_item("系统代理权限", true))
                                         .child(permission_item("TUN 权限", true))
                                         .child(permission_item("通知权限", true))
@@ -348,14 +349,14 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_5()
-                                .gap_4()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("安全与隐私"))
                                 .child(
                                     div()
                                         .flex()
                                         .flex_col()
-                                        .gap_3()
+                                        .gap_2()
                                         .child(setting_toggle("日志脱敏", true))
                                         .child(setting_toggle("本地 API Token", true))
                                         .child(setting_toggle("配置文件加密", false))
@@ -380,14 +381,14 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_5()
-                                .gap_4()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("更新设置"))
                                 .child(
                                     div()
                                         .flex()
                                         .flex_col()
-                                        .gap_3()
+                                        .gap_2()
                                         .child(setting_toggle("自动检查更新", true))
                                         .child(
                                             div()
@@ -441,7 +442,7 @@ fn top_metric_card(title: &'static str, val: &'static str, sub: &'static str, ic
         .rounded_2xl()
         .p_4()
         .items_center()
-        .gap_4()
+        .gap_2()
         .child(
             div()
                 .flex()
@@ -474,7 +475,7 @@ fn top_metric_card_highlight(title: &'static str, val: &'static str, sub: &'stat
         .rounded_2xl()
         .p_4()
         .items_center()
-        .gap_4()
+        .gap_2()
         .child(
             div()
                 .flex()
@@ -683,7 +684,7 @@ fn color_swatch(color: Rgba, active: bool) -> impl IntoElement {
         .flex()
         .items_center()
         .justify_center()
-        .size(px(24.0))
+        .size(px(32.0))
         .bg(color)
         .rounded_md()
         .cursor_pointer()
@@ -699,7 +700,7 @@ fn kernel_item(name: &'static str, status: &'static str, ver: &'static str, stat
             div()
                 .flex()
                 .items_center()
-                .gap_3()
+                .gap_2()
                 .child(
                     div()
                         .flex()
@@ -716,9 +717,9 @@ fn kernel_item(name: &'static str, status: &'static str, ver: &'static str, stat
             div()
                 .flex()
                 .items_center()
-                .gap_4()
+                .gap_2()
                 .child(div().text_xs().text_color(status_color).child(status))
-                .child(div().w(px(40.0)).text_xs().text_color(rgb(0x64748B)).child(ver))
+                .child(div().text_xs().text_color(rgb(0x64748B)).child(ver))
         )
 }
 
@@ -731,7 +732,7 @@ fn kernel_item_action(name: &'static str, status: &'static str, action: &'static
             div()
                 .flex()
                 .items_center()
-                .gap_3()
+                .gap_2()
                 .child(
                     div()
                         .flex()
@@ -748,7 +749,7 @@ fn kernel_item_action(name: &'static str, status: &'static str, action: &'static
             div()
                 .flex()
                 .items_center()
-                .gap_4()
+                .gap_2()
                 .child(div().text_xs().text_color(status_color).child(status))
                 .child(div().text_xs().text_color(rgb(0x3B82F6)).cursor_pointer().child(action))
         )
