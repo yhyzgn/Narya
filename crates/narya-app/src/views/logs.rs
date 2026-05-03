@@ -3,7 +3,9 @@ use crate::state::AppState;
 use crate::views::app_shell::AppShell;
 use gpui::{prelude::*, *};
 
-pub fn render_logs_view(_model: &Entity<AppState>, _cx: &mut Context<AppShell>) -> impl IntoElement {
+pub fn render_logs_view(model: &Entity<AppState>, _cx: &mut Context<AppShell>) -> impl IntoElement {
+    let state = model.read(_cx);
+
     // --- Design System ---
     let color_bg = rgb(0xF8FAFC);
     let color_card = rgb(0xFFFFFF);
@@ -150,12 +152,12 @@ pub fn render_logs_view(_model: &Entity<AppState>, _cx: &mut Context<AppShell>) 
                                         .flex_col()
                                         .flex_1()
                                         .overflow_hidden()
-                                        .children((0..12).map(|i| {
+                                        .children(state.log_lines.iter().map(|log| {
                                             log_stream_row(
-                                                "17:32:18",
-                                                if i % 4 == 0 { "ERROR" } else if i % 4 == 1 { "WARN " } else if i % 4 == 2 { "DEBUG" } else { "INFO " },
-                                                "core",
-                                                "outbound selected 香港 · HK 01 (ss://****)"
+                                                log.time.clone(),
+                                                log.level.clone(),
+                                                log.module.clone(),
+                                                log.content.clone()
                                             )
                                         }))
                                 )
@@ -299,7 +301,7 @@ fn source_item(name: &'static str, count: &'static str, color: Rgba, active: boo
         .child(div().text_xs().text_color(rgb(0x64748B)).child(count))
 }
 
-fn log_stream_row(time: &'static str, level: &'static str, module: &'static str, msg: &'static str) -> impl IntoElement {
+fn log_stream_row(time: String, level: String, module: String, msg: String) -> impl IntoElement {
     let level_color = match level.trim() {
         "ERROR" => rgb(0xEF4444),
         "WARN" => rgb(0xF59E0B),

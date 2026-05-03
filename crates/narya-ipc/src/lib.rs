@@ -19,4 +19,5 @@ pub struct IpcResponse {
 pub enum IpcNotification {
     TrafficUpdate { down: f32, up: f32 },
     StatusUpdate { running: bool },
+    LogLine { level: String, message: String },
 }

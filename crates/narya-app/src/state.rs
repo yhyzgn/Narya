@@ -15,6 +15,14 @@ pub enum SubscriptionTab {
     Advanced,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LogMessage {
+    pub time: String,
+    pub level: String,
+    pub module: String,
+    pub content: String,
+}
+
 #[derive(Serialize, Deserialize, Default)]
 pub struct PersistedState {
     pub nodes: Vec<narya_core::Node>,
@@ -37,6 +45,8 @@ pub struct AppState {
     pub subscription_filter_text: String,
 
     pub subscription_list_state: ListState,
+    
+    pub log_lines: Vec<LogMessage>,
 }
 
 impl AppState {
@@ -101,6 +111,18 @@ impl AppState {
             }
             IpcNotification::StatusUpdate { running } => {
                 self.kernel_running = running;
+            }
+            IpcNotification::LogLine { level, message } => {
+                let time = chrono::Local::now().format("%H:%M:%S").to_string();
+                self.log_lines.push(LogMessage {
+                    time,
+                    level,
+                    module: "core".to_string(), // extracted from message ideally, simplified here
+                    content: message,
+                });
+                if self.log_lines.len() > 1000 {
+                    self.log_lines.remove(0); // keep it bounded
+                }
             }
         }
         cx.notify();
@@ -307,11 +329,11 @@ impl AppState {
                 active_subscription_tab: SubscriptionTab::Overview,
                 subscription_filter_text: String::new(),
                 subscription_list_state: ListState::new(0, ListAlignment::Top, px(100.0)),
+                log_lines: Vec::new(),
             };
         }
 
-        let nodes = vec![
-            narya_core::Node {
+        let nodes = vec![            narya_core::Node {
                 id: "hk-01".to_string(),
                 name: "香港 HK 01".to_string(),
                 country_code: "HK".to_string(),
@@ -476,6 +498,7 @@ impl AppState {
             active_subscription_tab: SubscriptionTab::Overview,
             subscription_filter_text: String::new(),
             subscription_list_state: ListState::new(5, ListAlignment::Top, px(100.0)),
+            log_lines: Vec::new(),
         };
         state.save();
         state

@@ -1,5 +1,8 @@
 use tokio::process::{Child, Command};
 use anyhow::Result;
+use std::process::Stdio;
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::sync::broadcast;
 
 pub struct KernelManager {
     child: Option<Child>,
@@ -10,14 +13,35 @@ impl KernelManager {
         Self { child: None }
     }
 
-    pub async fn start(&mut self, binary_path: &str, config_path: &str) -> Result<()> {
+    pub async fn start(&mut self, binary_path: &str, config_path: &str, log_tx: broadcast::Sender<String>) -> Result<()> {
         self.stop().await?;
         println!("Starting kernel: {} with config: {}", binary_path, config_path);
         
-        let child = Command::new(binary_path)
+        let mut child = Command::new(binary_path)
             .args(["run", "-c", config_path])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()?;
             
+        let stdout = child.stdout.take().expect("Failed to open stdout");
+        let stderr = child.stderr.take().expect("Failed to open stderr");
+        
+        let tx1 = log_tx.clone();
+        tokio::spawn(async move {
+            let mut reader = BufReader::new(stdout).lines();
+            while let Ok(Some(line)) = reader.next_line().await {
+                let _ = tx1.send(line);
+            }
+        });
+
+        let tx2 = log_tx;
+        tokio::spawn(async move {
+            let mut reader = BufReader::new(stderr).lines();
+            while let Ok(Some(line)) = reader.next_line().await {
+                let _ = tx2.send(line);
+            }
+        });
+
         self.child = Some(child);
         Ok(())
     }
