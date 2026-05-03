@@ -17,6 +17,7 @@ tracing-subscriber.workspace = true
 anyhow.workspace = true
 rand = "0.8"
 tray-icon = "0.19"
+dirs = "5.0"
 narya-ipc = { path = "../narya-ipc" }
 narya-core = { path = "../narya-core" }
 narya-config = { path = "../narya-config" }

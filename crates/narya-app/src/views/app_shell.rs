@@ -19,7 +19,7 @@ pub struct AppShell {
 
 impl AppShell {
     pub fn open(cx: &mut App) {
-        let state = cx.new(|_| AppState::mock_data());
+        let state = cx.new(|_| AppState::init_or_mock());
         AppState::start_traffic_monitor(state.clone(), cx);
 
         // Default and Min size: 1536 x 1000 (User manual refinement)

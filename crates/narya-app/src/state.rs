@@ -4,6 +4,7 @@ use gpui::*;
 use std::time::Duration;
 use crate::ipc::IpcClient;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SubscriptionTab {
@@ -12,6 +13,15 @@ pub enum SubscriptionTab {
     Rules,
     Conversion,
     Advanced,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+pub struct PersistedState {
+    pub nodes: Vec<narya_core::Node>,
+    pub subscriptions: Vec<narya_core::Subscription>,
+    pub active_node_id: Option<String>,
+    pub kernel_running: bool,
+    pub selected_subscription_id: Option<String>,
 }
 
 pub struct AppState {
@@ -30,6 +40,34 @@ pub struct AppState {
 }
 
 impl AppState {
+    pub fn config_path() -> PathBuf {
+        let mut path = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
+        path.push("narya");
+        std::fs::create_dir_all(&path).ok();
+        path.push("state.json");
+        path
+    }
+
+    pub fn save(&self) {
+        let persisted = PersistedState {
+            nodes: self.nodes.clone(),
+            subscriptions: self.subscriptions.clone(),
+            active_node_id: self.active_node_id.clone(),
+            kernel_running: self.kernel_running,
+            selected_subscription_id: self.selected_subscription_id.clone(),
+        };
+        if let Ok(json) = serde_json::to_string_pretty(&persisted) {
+            let _ = std::fs::write(Self::config_path(), json);
+        }
+    }
+
+    pub fn load_persisted() -> PersistedState {
+        std::fs::read_to_string(Self::config_path())
+            .ok()
+            .and_then(|data| serde_json::from_str(&data).ok())
+            .unwrap_or_default()
+    }
+
     pub fn set_filter_text(&mut self, text: String, cx: &mut Context<Self>) {
         self.filter_text = text;
         cx.notify();
@@ -42,6 +80,7 @@ impl AppState {
 
     pub fn select_subscription(&mut self, id: String, cx: &mut Context<Self>) {
         self.selected_subscription_id = Some(id);
+        self.save();
         cx.notify();
     }
 
@@ -84,6 +123,7 @@ impl AppState {
                     if let Ok(_res) = client.send_request(request).await {
                         let _ = model.update(&mut cx, |state, cx| {
                             state.kernel_running = next_state;
+                            state.save();
                             cx.notify();
                         });
                     }
@@ -177,6 +217,7 @@ impl AppState {
                                     state.active_node_id = Some(first_node.id.clone());
                                 }
                                 
+                                state.save();
                                 cx.notify();
                             });
                             return;
@@ -231,7 +272,22 @@ impl AppState {
         }
     }
 
-    pub fn mock_data() -> Self {
+    pub fn init_or_mock() -> Self {
+        let persisted = Self::load_persisted();
+        if !persisted.subscriptions.is_empty() {
+            return Self {
+                active_node_id: persisted.active_node_id,
+                nodes: persisted.nodes,
+                subscriptions: persisted.subscriptions,
+                kernel_running: persisted.kernel_running,
+                filter_text: String::new(),
+                selected_subscription_id: persisted.selected_subscription_id,
+                active_subscription_tab: SubscriptionTab::Overview,
+                subscription_filter_text: String::new(),
+                subscription_list_state: ListState::new(0, ListAlignment::Top, px(100.0)),
+            };
+        }
+
         let nodes = vec![
             narya_core::Node {
                 id: "hk-01".to_string(),
@@ -388,7 +444,7 @@ impl AppState {
             },
         ];
 
-        Self {
+        let state = Self {
             active_node_id: Some("hk-01".to_string()),
             nodes,
             subscriptions,
@@ -398,7 +454,9 @@ impl AppState {
             active_subscription_tab: SubscriptionTab::Overview,
             subscription_filter_text: String::new(),
             subscription_list_state: ListState::new(5, ListAlignment::Top, px(100.0)),
-        }
+        };
+        state.save();
+        state
     }
 }
 
@@ -408,7 +466,7 @@ mod tests {
 
     #[test]
     fn test_app_state_mock() {
-        let state = AppState::mock_data();
+        let state = AppState::init_or_mock();
         assert!(!state.nodes.is_empty());
         assert!(!state.subscriptions.is_empty());
         assert!(state.active_node_id.is_some());
