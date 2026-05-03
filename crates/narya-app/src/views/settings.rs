@@ -81,8 +81,8 @@ pub fn render_settings_view(_model: &Entity<AppState>, _cx: &mut Context<AppShel
                                 .border_1()
                                 .border_color(color_border)
                                 .rounded_2xl()
-                                .p_6()
-                                .gap_5()
+                                .p_4()
+                                .gap_2()
                                 .child(div().text_sm().font_weight(FontWeight::BOLD).text_color(color_text_primary).child("常规设置"))
                                 .child(
                                     div()
