@@ -62,10 +62,21 @@ async fn main() -> Result<()> {
                                     }
                                 },
                                 "StartKernel" => {
-                                    // Placeholder for binary and config paths
-                                    match state.kernel.start("sing-box", "/tmp/config.json").await {
-                                        Ok(_) => IpcResponse { id: request.id, result: Some(serde_json::json!(true)), error: None },
-                                        Err(e) => IpcResponse { id: request.id, result: None, error: Some(e.to_string()) },
+                                    if let Ok(node) = serde_json::from_value::<narya_core::Node>(request.params.clone()) {
+                                        if let Ok(config_json) = crate::config_gen::ConfigGenerator::generate_json(&node) {
+                                            let config_path = "/tmp/narya-kernel.json";
+                                            let _ = fs::write(config_path, serde_json::to_string_pretty(&config_json).unwrap_or_default());
+                                            
+                                            // Make sure sing-box is available in PATH or provide full path. For demo, we use "sing-box"
+                                            match state.kernel.start("sing-box", config_path).await {
+                                                Ok(_) => IpcResponse { id: request.id, result: Some(serde_json::json!(true)), error: None },
+                                                Err(e) => IpcResponse { id: request.id, result: None, error: Some(e.to_string()) },
+                                            }
+                                        } else {
+                                            IpcResponse { id: request.id, result: None, error: Some("Failed to generate config".to_string()) }
+                                        }
+                                    } else {
+                                        IpcResponse { id: request.id, result: None, error: Some("Invalid node data".to_string()) }
                                     }
                                 },
                                 "StopKernel" => {

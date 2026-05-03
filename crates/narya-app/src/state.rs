@@ -110,17 +110,39 @@ impl AppState {
         let running = model.read(cx).kernel_running;
         let next_state = !running;
         
+        let active_node = model.read(cx).active_node_id.as_ref()
+            .and_then(|id| model.read(cx).nodes.iter().find(|n| n.id == *id))
+            .cloned();
+
         cx.spawn(move |cx: &mut AsyncApp| {
             let mut cx = cx.clone();
             let model = model.clone();
             async move {
                 if let Ok(mut client) = IpcClient::connect("/tmp/narya.sock").await {
-                    let request = IpcRequest {
+                    // Send SetSystemProxy command
+                    let req_proxy = IpcRequest {
                         id: 1,
                         method: "SetSystemProxy".to_string(),
                         params: serde_json::json!(next_state),
                     };
-                    if let Ok(_res) = client.send_request(request).await {
+                    let _ = client.send_request(req_proxy).await;
+                    
+                    // Send Kernel command
+                    let method = if next_state { "StartKernel" } else { "StopKernel" };
+                    
+                    let params = if next_state && active_node.is_some() {
+                        serde_json::to_value(active_node.unwrap()).unwrap_or(serde_json::json!(null))
+                    } else {
+                        serde_json::json!(null)
+                    };
+
+                    let req_kernel = IpcRequest {
+                        id: 2,
+                        method: method.to_string(),
+                        params,
+                    };
+                    
+                    if let Ok(_res) = client.send_request(req_kernel).await {
                         let _ = model.update(&mut cx, |state, cx| {
                             state.kernel_running = next_state;
                             state.save();
